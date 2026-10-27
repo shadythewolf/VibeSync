@@ -4,10 +4,10 @@
   "version": "2.1.0",
   "description": "VibeSync - VibeDeck fork with Spotify, synchronized lyrics and album artwork colors",
   "main": "./out/main/index.js",
-  "author": "Amara Dhanush Kumar",
+  "author": "Shady",
   "license": "MIT",
   "private": true,
-  "homepage": "https://github.com/dhanush-the-versatile/VibeDeck",
+  "homepage": "https://github.com/shadythewolf/VibeSync",
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
@@ -50,6 +50,6 @@
     "zustand": "^5.0.15"
   },
   "contributors": [
-    "Shady (VibeSync fork)"
+    "Amara Dhanush Kumar (original VibeDeck author, https://github.com/dhanush-the-versatile/VibeDeck)"
   ]
 }

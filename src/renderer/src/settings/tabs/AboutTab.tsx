@@ -113,6 +113,9 @@ export function AboutTab(): ReactElement {
         <Button variant="ghost" size="sm" onClick={() => void api?.app.openExternal('https://github.com/dhanush-the-versatile/VibeDeck')}>
           Original VibeDeck project
         </Button>
+        <Button variant="ghost" size="sm" onClick={() => void api?.app.openExternal('https://github.com/shadythewolf/VibeSync')}>
+          VibeSync on GitHub
+        </Button>
       </SettingsGroup>
 
       <SettingsGroup title="System" bare>

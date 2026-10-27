@@ -1,6 +1,6 @@
 # Third-party notices
 
-VibeDeck bundles or depends on the following components. Each remains under its own licence.
+VibeSync (a fork of [VibeDeck](https://github.com/dhanush-the-versatile/VibeDeck) by Amara Dhanush Kumar, MIT) bundles or depends on the following components. Each remains under its own licence.
 
 | Component | Licence | Used for |
 | --- | --- | --- |
