@@ -1,0 +1,21 @@
+# Normalise text files in the repository, check out native line endings on Windows.
+* text=auto
+
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.js   text eol=lf
+*.mjs  text eol=lf
+*.json text eol=lf
+*.css  text eol=lf
+*.html text eol=lf
+*.yml  text eol=lf
+*.md   text eol=lf
+*.cs   text eol=crlf
+*.ps1  text eol=crlf
+*.nsh  text eol=crlf
+
+*.dll  binary
+*.exe  binary
+*.ico  binary
+*.png  binary
+*.wav  binary

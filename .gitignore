@@ -1,0 +1,10 @@
+node_modules/
+out/
+dist/
+helper/bin/
+helper/obj/
+build/icons/
+*.log
+test-results/
+playwright-report/
+.vite/
