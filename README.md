@@ -20,7 +20,9 @@ npm run dev
 
 Use a Node.js version supported by the locked dependencies, such as Node 22.12+ within the 22 release line or Node 24. The installed Vitest package defines the supported versions in its engines field.
 
-Build a Linux AppImage with npm run dist:linux. Build Windows installers on Windows with npm run dist. The native Windows helper requires .NET Framework 4.8; Linux capture uses pactl and parec.
+Settings > Spotify > Spotify bridge setup installs or updates the bundled bridge in Spicetify with one click.
+
+Build a Linux AppImage and .deb with npm run dist:linux; scripts/install-linux.sh installs the AppImage on other distributions. Build Windows installers on Windows with npm run dist. The native Windows helper requires .NET Framework 4.8; Linux capture uses pactl and parec.
 
 [Architecture](docs/ARCHITECTURE.md), [Development](docs/DEVELOPMENT.md) and [Testing](docs/TESTING.md) describe the current fork. Upstream's documentation is available in the linked original repository.
 

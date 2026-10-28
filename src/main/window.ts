@@ -8,6 +8,8 @@
 import { app, BrowserWindow, type BrowserWindowConstructorOptions } from 'electron'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import appIconIco from '../../build/icon.ico?asset'
+import appIconPng from '../../build/icon.png?asset'
 import { IPC } from '../shared/ipc'
 import type { WindowState } from '../shared/types'
 import { log } from './logger'
@@ -120,6 +122,8 @@ export function createMainWindow(opts: CreateWindowOptions): BrowserWindow {
     minHeight: MIN_WINDOW_HEIGHT,
     show: false,
     title: 'VibeSync',
+    // The packaged .exe carries its own icon; dev runs (electron.exe) and Linux windows need it set.
+    icon: process.platform === 'win32' ? appIconIco : appIconPng,
     backgroundColor: WINDOW_BACKGROUND,
     autoHideMenuBar: true,
     alwaysOnTop: settings.general.alwaysOnTop,

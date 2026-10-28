@@ -13,21 +13,15 @@ Farbfolge auf beiden Seiten dar: hell in der Mitte, dunkel außen. Die Flächena
 bleiben den jeweiligen Farben zugeordnet.
 Die dunkle Darstellung aus 2.0.6 und Bridge 2.0.1 bleiben erhalten.
 
-1. VibeSync und Spotify beenden.
-2. Die ZIP vollständig in einen eigenen Ordner entpacken.
-3. Spicetify/vibesync-bridge.js aus diesem Paket manuell in den Extensions-Ordner
-   kopieren und die vorhandene Datei ersetzen. Den Ordner zeigt:
-   spicetify path -e root
-4. Bei bereits aktivierter vibesync-bridge.js genügt anschließend:
-   spicetify apply
-   Falls Spicetify veraltete vorverarbeitete Daten meldet, stattdessen:
-   spicetify restore backup apply
-5. Spotify und Windows/VibeSync.exe oder die neue Linux-AppImage starten.
-   Der gesamte Windows-Ordner muss zusammenbleiben.
+1. VibeSync beenden.
+2. Windows: den neuen Setup-Installer ausführen; er ersetzt die alte Version.
+   Linux: die neue .deb installieren oder sh install-linux.sh erneut ausführen.
+3. Zeigt Settings > Spotify > Spotify bridge setup Update bridge an, darauf
+   klicken. Spotify startet dabei einmal neu.
 
 Die Farbkorrektur betrifft nur die App. Bridge 2.0.1 ist seit 2.0.3 unverändert.
-Wer diese Bridge bereits installiert hat, kann Schritte 3 und 4 überspringen.
-Erstinstallation: Spicetify/Installation-DE.txt.
+Wer diese Bridge bereits installiert hat, kann Schritt 3 überspringen.
+Erstinstallation: INSTALLATION-DE.txt.
 Bestehende Profile bleiben erhalten. Hintergrund #020203, Farben, Lyrics,
 Up Next und die Bildschirm-Wachhaltefunktion bei aktivem Fenster bleiben erhalten.
 Spotify Desktop muss laufen und ausführbar bleiben; ein vollständig eingefrorener

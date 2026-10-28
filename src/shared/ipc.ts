@@ -13,6 +13,8 @@ import type {
   AppInfo,
   AudioDevice,
   AudioStatus,
+  BridgeInstallResult,
+  BridgeSetupStatus,
   BrowserCaptureReport,
   LogLevel,
   PcmChunk,
@@ -54,6 +56,9 @@ export const IPC = {
   // Local Spotify queue
   spotifyQueueGet: 'spotify:queue-get',
   spotifyQueueChanged: 'spotify:queue-changed',
+  // Spicetify bridge setup (invoke)
+  spotifyBridgeStatus: 'spotify:bridge-status',
+  spotifyInstallBridge: 'spotify:install-bridge',
 
   // window
   windowMinimize: 'window:minimize',
@@ -123,6 +128,9 @@ export interface VibeDeckApi {
   spotify: {
     getQueue(): Promise<SpotifyQueueState>
     onQueue(cb: (state: SpotifyQueueState) => void): Unsubscribe
+    getBridgeStatus(): Promise<BridgeSetupStatus>
+    /** Copies the bundled bridge into Spicetify, enables it and runs spicetify apply. */
+    installBridge(): Promise<BridgeInstallResult>
   }
   window: {
     minimize(): void

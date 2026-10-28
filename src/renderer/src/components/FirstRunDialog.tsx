@@ -4,6 +4,7 @@
  * `general.firstRunCompleted`.
  */
 import { useEffect, useRef, useState, type ReactElement } from 'react'
+import { BridgeSetupControl, useBridgeSetup } from '@renderer/settings/BridgeSetup'
 import { useSettingsStore } from '@renderer/store/settingsStore'
 import { useUiStore } from '@renderer/store/uiStore'
 import { IconMicOff, IconOffline, IconSpeaker } from './icons'
@@ -41,6 +42,7 @@ export function FirstRunDialog(): ReactElement {
   const [startMinimized, setStartMinimized] = useState(false)
   const [keepInTray, setKeepInTray] = useState(false)
   const continueRef = useRef<HTMLButtonElement | null>(null)
+  const bridge = useBridgeSetup()
 
   useEffect(() => {
     continueRef.current?.focus()
@@ -116,6 +118,18 @@ export function FirstRunDialog(): ReactElement {
               onChange={setKeepInTray}
               testId="first-run-keep-in-tray"
             />
+          </div>
+
+          <div className="first-run__options" role="group" aria-label="Spotify">
+            <div className="option-row" data-testid="first-run-bridge">
+              <div className="option-row__text">
+                <span className="option-row__label">Connect Spotify (optional)</span>
+                <span className="option-row__desc">Song details, Up next and synchronized lyrics come from Spotify Desktop. {bridge.description}</span>
+              </div>
+              <div className="option-row__actions">
+                <BridgeSetupControl setup={bridge} />
+              </div>
+            </div>
           </div>
         </div>
 

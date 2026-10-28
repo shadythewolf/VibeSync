@@ -6,6 +6,10 @@ Die Bridge-Version 2.0.1 aus diesem Paket ist die einzige Spotify-Anbindung.
 Eine Spotify-Developer-App, Client-ID oder separate Anmeldung in VibeSync entfällt.
 
 Bridge installieren oder aktualisieren
+In VibeSync Settings > Spotify > Spotify bridge setup: Install bridge bzw.
+Update bridge klicken. VibeSync erledigt die folgenden Schritte automatisch.
+
+Manuell, falls die automatische Installation scheitert:
 1. Spotify vollständig beenden.
 2. Den Extensions-Ordner anzeigen:
    spicetify path -e root

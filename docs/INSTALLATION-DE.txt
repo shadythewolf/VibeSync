@@ -1,21 +1,26 @@
 VibeSync: Installation und Nutzung
 
 Windows
-Die ZIP vollständig entpacken und Windows/VibeSync.exe starten.
-Der gesamte Windows-Ordner muss zusammenbleiben.
+VibeSync-Setup-<version>.exe starten und dem Installer folgen. VibeSync startet
+danach automatisch und bietet beim ersten Start die Spotify-Verbindung an.
+Ohne Installation: VibeSync-Portable.exe direkt starten.
 
 Linux x86_64
-Die AppImage im Linux-Ordner ausführbar machen und starten.
-Im Terminal den tatsächlichen Dateinamen aus der ZIP verwenden:
-  chmod +x VibeSync-Linux-<version>.AppImage
-  ./VibeSync-Linux-<version>.AppImage
-Wenn FUSE nicht verfügbar ist:
-  ./VibeSync-Linux-<version>.AppImage --appimage-extract-and-run
-Für Systemaudio-Aufnahme werden pactl und parec benötigt.
+Debian, Ubuntu, Mint und Pop!_OS: die .deb per Doppelklick installieren oder
+  sudo apt install ./VibeSync-Linux-<version>.deb
+Die .deb legt einen Menüeintrag an und installiert pactl und parec automatisch.
+Andere Distributionen: das Installationsskript neben der AppImage ausführen:
+  sh install-linux.sh
+Es installiert VibeSync für den aktuellen Benutzer, legt einen Menüeintrag und den
+Befehl vibesync an, erkennt fehlendes FUSE und bietet fehlende Audio-Pakete an.
+Entfernen: sh install-linux.sh --uninstall
 
 Spotify verbinden
-Spotify Desktop mit Spicetify verwenden und die Bridge 2.0.1 aus diesem Paket
-installieren. Anleitung: Spicetify/Installation-DE.txt.
+Voraussetzung ist Spotify Desktop mit Spicetify (https://spicetify.app).
+In VibeSync Settings > Spotify > Spotify bridge setup öffnen und Install bridge
+klicken (auch im Willkommensdialog). VibeSync kopiert die mitgelieferte Bridge,
+aktiviert sie und führt spicetify apply aus; Spotify startet dabei einmal neu.
+Fehlt Spicetify, führt Get Spicetify zur Anleitung, danach Check again klicken.
 Die Bridge verbindet sich automatisch und liefert Titel, alle verfügbaren Artists,
 Album, Cover, Wiedergabezeit, Dauer, Pause, Up Next und Spotify-Lyrics.
 Spotify Desktop muss mit der Bridge laufen. Es gibt keine Client-ID oder OAuth-Anmeldung.
@@ -27,7 +32,7 @@ Album Art passt die Farben an das aktuelle Cover an.
 Lange Artist-Listen umbrechen beim aktuellen Song und in der Vorschau.
 Up next steht unten rechts. Unter Settings > Spotify > Show next song lässt es sich abschalten.
 Die lokale Warteschlange wird ungefähr jede Sekunde aktualisiert. Ohne nächsten Song bleibt die Vorschau ausgeblendet.
-Für Spotify-Lyrics die Anleitung in Spicetify/Installation-DE.txt befolgen und Show lyrics einschalten.
+Für Spotify-Lyrics die Bridge wie oben installieren und Show lyrics einschalten.
 
 Aktualisieren
 VibeSync beenden, die neue ZIP vollständig in einen eigenen Ordner entpacken und die neue App starten.
