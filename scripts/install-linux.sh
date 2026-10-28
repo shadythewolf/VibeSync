@@ -9,7 +9,7 @@ set -eu
 BIN_DIR="${XDG_BIN_HOME:-$HOME/.local/bin}"
 APP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/vibesync"
 DESKTOP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
-ICON_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/icons/hicolor/256x256/apps"
+ICON_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/icons/hicolor/512x512/apps"
 APPIMAGE="$APP_DIR/VibeSync.AppImage"
 
 say() { printf '%s\n' "$*"; }
@@ -49,8 +49,8 @@ EOF
 chmod +x "$BIN_DIR/vibesync"
 
 # Icon from the AppImage itself; a missing icon only affects the menu entry.
-( cd "$APP_DIR" && "$APPIMAGE" --appimage-extract 'usr/share/icons/hicolor/256x256/apps/*' >/dev/null 2>&1 \
-  && cp squashfs-root/usr/share/icons/hicolor/256x256/apps/*.png "$ICON_DIR/vibesync.png"; rm -rf squashfs-root ) || true
+( cd "$APP_DIR" && "$APPIMAGE" --appimage-extract 'usr/share/icons/*' >/dev/null 2>&1 \
+  && cp "$(find squashfs-root/usr/share/icons -name '*.png' | sort | tail -n 1)" "$ICON_DIR/vibesync.png"; rm -rf squashfs-root ) || true
 
 cat > "$DESKTOP_DIR/vibesync.desktop" <<EOF
 [Desktop Entry]
@@ -59,6 +59,7 @@ Name=VibeSync
 Comment=Music visualizer with Spotify and synchronized lyrics
 Exec=$BIN_DIR/vibesync %U
 Icon=vibesync
+StartupWMClass=vibesync
 Terminal=false
 Categories=AudioVideo;Audio;
 EOF

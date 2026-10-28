@@ -74,6 +74,10 @@ linux:
   category: AudioVideo
   icon: build/icon.png
   artifactName: ${productName}-Linux-${version}.${ext}
+  # Required for the .deb; a GitHub no-reply address keeps a real email out of the package.
+  maintainer: Shady <shadythewolf@users.noreply.github.com>
+  # Lets desktops match the running window to vibesync.desktop (dock icon, grouping).
+  syncDesktopName: true
 # The .deb installs a menu entry and pulls in pactl/parec, so no chmod, FUSE or manual packages.
 deb:
   depends:
