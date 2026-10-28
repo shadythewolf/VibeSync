@@ -19,5 +19,5 @@
       "@shared/*": ["src/shared/*"]
     }
   },
-  "include": ["tests/**/*.ts", "vitest.config.ts"]
+  "include": ["tests/**/*.ts", "vitest.config.ts", "src/main/env.d.ts"]
 }

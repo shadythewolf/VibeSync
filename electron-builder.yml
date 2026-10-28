@@ -30,7 +30,12 @@ asar: true
 npmRebuild: false
 nodeGypRebuild: false
 compression: normal
-publish: null
+# Update feed: the app reads resources/app-update.yml and checks GitHub Releases.
+# Builds never upload; attach latest.yml / latest-linux.yml and the .blockmap files to the release.
+publish:
+  provider: github
+  owner: shadythewolf
+  repo: VibeSync
 electronDownload:
   cache: .electron-cache
 win:

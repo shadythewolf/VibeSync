@@ -20,7 +20,7 @@ import type { LyricsService } from './lyricsService'
 import { getHelperPath, getUserDataPath, helperExists, isPortable } from './paths'
 import { settingsStore } from './settingsStore'
 import { isHardwareAccelerationEnabled, wasGpuFallbackApplied } from './gpuGuard'
-import { checkForUpdates, updatesConfigured } from './updater'
+import { checkForUpdates, downloadUpdate, getUpdateState, installUpdate, updatesConfigured } from './updater'
 import { getMainWindow, getWindowState, setFullscreen, setQuitting, toggleFullscreen, toggleMaximize } from './window'
 
 export interface IpcServices {
@@ -324,6 +324,18 @@ export function registerIpc(services: IpcServices): void {
   ipcMain.handle(IPC.appCheckUpdates, (event) => {
     requireTrusted(event, IPC.appCheckUpdates)
     return checkForUpdates()
+  })
+  ipcMain.handle(IPC.appGetUpdateStatus, (event) => {
+    requireTrusted(event, IPC.appGetUpdateStatus)
+    return getUpdateState()
+  })
+  ipcMain.handle(IPC.appDownloadUpdate, (event) => {
+    requireTrusted(event, IPC.appDownloadUpdate)
+    return downloadUpdate()
+  })
+  ipcMain.handle(IPC.appInstallUpdate, (event) => {
+    requireTrusted(event, IPC.appInstallUpdate)
+    return installUpdate()
   })
   ipcMain.handle(IPC.appClearArtworkCache, (event) => {
     requireTrusted(event, IPC.appClearArtworkCache)

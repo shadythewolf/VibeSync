@@ -80,6 +80,11 @@ export const IPC = {
   appLog: 'app:log',
   appRendererError: 'app:renderer-error',
   appCheckUpdates: 'app:check-updates',
+  appGetUpdateStatus: 'app:get-update-status',
+  appDownloadUpdate: 'app:download-update',
+  appInstallUpdate: 'app:install-update',
+  // event main -> renderer
+  appUpdateStatus: 'app:update-status',
   appClearArtworkCache: 'app:clear-artwork-cache',
   // event main -> renderer: the GPU process was lost; canvases must be re-created
   appGpuReset: 'app:gpu-reset'
@@ -152,6 +157,12 @@ export interface VibeDeckApi {
     log(level: LogLevel, message: string, detail?: string): void
     reportError(report: RendererErrorReport): void
     checkForUpdates(): Promise<UpdateCheckResult>
+    getUpdateStatus(): Promise<UpdateCheckResult>
+    /** Downloads the available update, or opens the release page when this install cannot self-update. */
+    downloadUpdate(): Promise<void>
+    /** Quits and installs a downloaded update. */
+    installUpdate(): Promise<void>
+    onUpdateStatus(cb: (state: UpdateCheckResult) => void): Unsubscribe
     clearArtworkCache(): Promise<void>
     /** Fired after Chromium's GPU process crashed and restarted; canvases must be re-created. */
     onGpuReset(cb: () => void): Unsubscribe

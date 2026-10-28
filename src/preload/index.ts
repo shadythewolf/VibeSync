@@ -101,6 +101,10 @@ const api: VibeDeckApi = {
     log: (level: LogLevel, message: string, detail?: string) => ipcRenderer.send(IPC.appLog, { level, message, detail }),
     reportError: (report: RendererErrorReport) => ipcRenderer.send(IPC.appRendererError, report),
     checkForUpdates: () => ipcRenderer.invoke(IPC.appCheckUpdates) as Promise<UpdateCheckResult>,
+    getUpdateStatus: () => ipcRenderer.invoke(IPC.appGetUpdateStatus) as Promise<UpdateCheckResult>,
+    downloadUpdate: () => ipcRenderer.invoke(IPC.appDownloadUpdate) as Promise<void>,
+    installUpdate: () => ipcRenderer.invoke(IPC.appInstallUpdate) as Promise<void>,
+    onUpdateStatus: (cb) => on<UpdateCheckResult>(IPC.appUpdateStatus, cb),
     clearArtworkCache: () => ipcRenderer.invoke(IPC.appClearArtworkCache) as Promise<void>,
     onGpuReset: (cb) => on<void>(IPC.appGpuReset, () => cb())
   }

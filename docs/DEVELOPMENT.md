@@ -25,7 +25,24 @@ Linux: `npm run dist:linux` builds the AppImage and a .deb (which depends on `pu
 
 ## Releases
 
-Bump `version` in package.json, build on Windows (`npm run dist`) and on Linux (`npm run dist:linux`), then attach `VibeSync-Setup-<version>.exe`, `VibeSync-Portable.exe`, `VibeSync-Linux-<version>.deb`, `VibeSync-Linux-<version>.AppImage`, `scripts/install-linux.sh` and a `SHA256SUMS.txt` to a GitHub release tagged `v<version>`. Versions follow semantic versioning: fixes increment Patch, compatible features Minor, breaking changes Major.
+1. Bump `version` in package.json (semantic versioning: fixes increment Patch, compatible features Minor, breaking changes Major).
+2. Build on Windows (`npm run dist`) and on Linux (`npm run dist:linux`). Builds never upload anything.
+3. Create a GitHub release tagged `v<version>` and attach from both `dist` folders:
+   - `VibeSync-Setup-<version>.exe` and `VibeSync-Setup-<version>.exe.blockmap`
+   - `VibeSync-Portable.exe`
+   - `VibeSync-Linux-<version>.deb`, `VibeSync-Linux-<version>.AppImage` and `VibeSync-Linux-<version>.AppImage.blockmap`
+   - `latest.yml` (Windows) and `latest-linux.yml` (Linux)
+   - `scripts/install-linux.sh` and a `SHA256SUMS.txt`
+
+The in-app updater reads `latest.yml` / `latest-linux.yml` from the newest release; without them, installed copies never see the update. The `.blockmap` files let it download only the changed parts.
+
+## Updates
+
+`src/main/updater.ts` uses electron-updater with the GitHub provider from the `publish` entry in electron-builder.yml, which the build writes into `resources/app-update.yml`. It checks at launch and every six hours when Settings › General allows it, and downloads or installs only on request. The NSIS installer, the AppImage and the .deb (marked by `resources/package-type`) replace themselves; the portable build and unpackaged runs link to the release page. Update checks need a public repository.
+
+`install-linux.sh` passes the AppImage path as `VIBESYNC_APPIMAGE` (and `VIBESYNC_EXTRACT_AND_RUN` without FUSE), because extract-and-run mode strips `APPIMAGE*` variables before the app starts; the updater restores them so it can replace the file and restart the new version.
+
+To test an update locally, build a higher version, serve its `dist` folder (for example `python3 -m http.server 8099 --bind 127.0.0.1`) and start the installed older version with `VIBEDECK_UPDATE_URL=http://127.0.0.1:8099/`. Plain HTTP is accepted only for localhost.
 
 ## Runtime conventions
 
@@ -38,7 +55,5 @@ TypeScript uses strict checking. Audio capture and frame scheduling are singleto
 Some internal names come from VibeDeck and are kept so existing profiles keep working: the renderer API `window.vibedeck`, the helper file names (`VibeDeckHelper.exe`, `vibedeck-linux-helper.cjs`) and the environment variables below.
 
 `VIBEDECK_USER_DATA` selects an isolated profile for tests. `VIBEDECK_LOG_CONSOLE=1` mirrors main-process logs. The log file is `logs/vibedeck.log` in the VibeSync profile; Settings › About opens that folder.
-
-The app ships without an update feed. An HTTPS `VIBEDECK_UPDATE_URL` or the configured `UPDATE_FEED_URL` can enable update checks; downloads and installation remain manual.
 
 See [TESTING.md](TESTING.md) for checks and [ARCHITECTURE.md](ARCHITECTURE.md) for how the parts fit together.

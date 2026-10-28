@@ -139,8 +139,8 @@ export function GeneralTab(): ReactElement {
           label="Check for updates on launch"
           description={
             updatesConfigured
-              ? 'Looks for a newer VibeSync once at startup. Nothing is installed without asking.'
-              : 'This build has no update feed configured, so update checks are disabled.'
+              ? 'Looks for a new VibeSync release on GitHub at startup and every few hours. Nothing is downloaded or installed without asking.'
+              : 'Update checks only work in the installed app.'
           }
           disabled={!updatesConfigured}
           htmlFor="general-checkForUpdates"
