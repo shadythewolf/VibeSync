@@ -13,6 +13,7 @@ import { ErrorBoundary, ErrorScreen } from './components/ErrorBoundary'
 import { FirstRunDialog } from './components/FirstRunDialog'
 import { TitleBar, toggleAlwaysOnTop, toggleFullscreen } from './components/TitleBar'
 import { Toasts } from './components/Toasts'
+import { UpdateBanner } from './components/UpdateBanner'
 import { MODE_COMPONENTS } from './modes'
 import { SettingsPanel } from './settings/SettingsPanel'
 import { getSettings, useSettingsStore } from './store/settingsStore'
@@ -239,6 +240,7 @@ export function App(): ReactElement {
         <TitleBar floating={fullscreen} visible={!fullscreen || barVisible} />
         <Stage mode={mode} />
         <AudioErrorBanner />
+        <UpdateBanner />
         {settingsOpen ? <SettingsPanel /> : null}
         <Toasts />
         {firstRunOpen ? <FirstRunDialog /> : null}

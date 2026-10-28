@@ -8,6 +8,7 @@ import { Chip } from '@renderer/components/ui/Chip'
 import { useAudioStatusStore } from '@renderer/store/audioStatusStore'
 import { useTrackStore } from '@renderer/store/trackStore'
 import { useUiStore } from '@renderer/store/uiStore'
+import { useUpdateStore } from '@renderer/store/updateStore'
 import { errorMessage, getApi } from '@renderer/utils/api'
 import { cx } from '@renderer/utils/classNames'
 import { clearArtworkCache } from '@renderer/visualizer/artwork'
@@ -28,7 +29,11 @@ function describeUpdate(r: UpdateCheckResult): string {
     case 'up-to-date':
       return `You are on the latest version${r.version ? ` (${r.version})` : ''}.`
     case 'available':
-      return `Version ${r.version ?? ''} is available.${r.message ? ' ' + r.message : ''}`
+      return r.message?.startsWith('Download failed') ? r.message : `Version ${r.version ?? ''} is available.`
+    case 'downloading':
+      return `Downloading version ${r.version ?? ''}… ${r.percent ?? 0}%`
+    case 'downloaded':
+      return `Version ${r.version ?? ''} is ready. VibeSync restarts once to install it.`
     case 'checking':
       return 'Checking for updates…'
     case 'error':
@@ -41,8 +46,8 @@ function describeUpdate(r: UpdateCheckResult): string {
 export function AboutTab(): ReactElement {
   const { info, loading, error, reload } = useAppInfo()
   const engine = useAudioStatusStore((s) => s.status.engine)
-  const [update, setUpdate] = useState<UpdateCheckResult | null>(null)
-  const [checking, setChecking] = useState(false)
+  const update = useUpdateStore((s) => s.state)
+  const checking = update.status === 'checking'
   const [clearing, setClearing] = useState(false)
   const api = getApi()
 
@@ -53,15 +58,9 @@ export function AboutTab(): ReactElement {
       .finally(() => setBusy?.(false))
   }
 
+  // Results arrive through the shared update store, which also drives the update banner.
   const checkUpdates = (): void => {
-    if (!api) return
-    setChecking(true)
-    setUpdate({ status: 'checking' })
-    api.app
-      .checkForUpdates()
-      .then((r) => setUpdate(r))
-      .catch((err: unknown) => setUpdate({ status: 'error', message: errorMessage(err) }))
-      .finally(() => setChecking(false))
+    if (api) run('Check for updates', async () => { await api.app.checkForUpdates() })
   }
 
   const clearCache = (): void => {
@@ -152,12 +151,12 @@ export function AboutTab(): ReactElement {
             Clear artwork cache
           </Button>
         </div>
-        {update ? (
+        {update.status !== 'idle' ? (
           <div
             className={cx(
               'update-result',
               update.status === 'up-to-date' && 'update-result--ok',
-              update.status === 'available' && 'update-result--available',
+              (update.status === 'available' || update.status === 'downloading' || update.status === 'downloaded') && 'update-result--available',
               update.status === 'error' && 'update-result--error'
             )}
             role="status"
@@ -165,6 +164,16 @@ export function AboutTab(): ReactElement {
           >
             {update.status === 'checking' ? <IconRefresh className="spinner-icon" /> : null}
             {describeUpdate(update)}
+            {update.status === 'available' || update.status === 'downloading' ? (
+              <Button size="sm" variant="primary" loading={update.status === 'downloading'} onClick={() => api && run('Download update', () => api.app.downloadUpdate())}>
+                {update.canInstall ? 'Download and install' : 'Download'}
+              </Button>
+            ) : null}
+            {update.status === 'downloaded' ? (
+              <Button size="sm" variant="primary" onClick={() => api && run('Install update', () => api.app.installUpdate())}>
+                Restart to update
+              </Button>
+            ) : null}
           </div>
         ) : null}
       </SettingsGroup>

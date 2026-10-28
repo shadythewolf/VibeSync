@@ -157,9 +157,19 @@ describe('validateSettings', () => {
 
   it('drops unknown keys and forces the current schema version', () => {
     const out = validateSettings({ version: 7, general: { foo: 1 }, bogus: true }) as unknown as Record<string, unknown>
-    expect(out.version).toBe(2)
+    expect(out.version).toBe(3)
     expect(out.bogus).toBeUndefined()
     expect((out.general as Record<string, unknown>).foo).toBeUndefined()
+  })
+
+  it('turns update checks on once for profiles from before the update feed', () => {
+    expect(validateSettings({ version: 2, general: { checkForUpdates: false } }).general.checkForUpdates).toBe(true)
+    expect(validateSettings({ general: { checkForUpdates: false } }).general.checkForUpdates).toBe(true)
+  })
+
+  it('keeps a user choice to disable update checks', () => {
+    expect(validateSettings({ version: 3, general: { checkForUpdates: false } }).general.checkForUpdates).toBe(false)
+    expect(DEFAULT_SETTINGS.general.checkForUpdates).toBe(true)
   })
 })
 

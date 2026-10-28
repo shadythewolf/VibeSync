@@ -150,9 +150,14 @@ export interface AppInfo {
 }
 
 export interface UpdateCheckResult {
-  status: 'not-configured' | 'up-to-date' | 'available' | 'error' | 'checking'
+  status: 'idle' | 'not-configured' | 'checking' | 'up-to-date' | 'available' | 'downloading' | 'downloaded' | 'error'
   version?: string
   message?: string
+  /** Download progress 0-100 while status is 'downloading'. */
+  percent?: number
+  /** This install can download and replace itself (installer, AppImage, .deb); otherwise use releaseUrl. */
+  canInstall?: boolean
+  releaseUrl?: string
 }
 
 /** Spicetify bridge setup as seen on disk (independent of a live bridge connection). */

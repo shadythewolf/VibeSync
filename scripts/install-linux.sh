@@ -35,16 +35,21 @@ mkdir -p "$APP_DIR" "$BIN_DIR" "$DESKTOP_DIR" "$ICON_DIR"
 cp "$SOURCE" "$APPIMAGE"
 chmod +x "$APPIMAGE"
 
-# AppImages need FUSE 2; without it, extract-and-run works everywhere.
-EXTRA_ARGS=""
+# AppImages need FUSE 2; without it, extract-and-run works everywhere. The environment
+# variable (not the flag) also reaches the new version that the updater restarts.
+EXTRACT_ENV=""
 if ! ls /usr/lib*/libfuse.so.2 /usr/lib/*/libfuse.so.2 /lib/*/libfuse.so.2 >/dev/null 2>&1; then
-  EXTRA_ARGS="--appimage-extract-and-run"
+  EXTRACT_ENV="export APPIMAGE_EXTRACT_AND_RUN=1 VIBESYNC_EXTRACT_AND_RUN=1"
   say "Note: FUSE 2 (libfuse2) not found, VibeSync will start in extract-and-run mode."
 fi
 
+# The in-app updater needs the AppImage path. Extract-and-run strips APPIMAGE* variables
+# before starting the app, so it is passed under VibeSync's own names as well.
 cat > "$BIN_DIR/vibesync" <<EOF
 #!/usr/bin/env sh
-exec "$APPIMAGE" $EXTRA_ARGS "\$@"
+export APPIMAGE="$APPIMAGE" VIBESYNC_APPIMAGE="$APPIMAGE"
+$EXTRACT_ENV
+exec "$APPIMAGE" "\$@"
 EOF
 chmod +x "$BIN_DIR/vibesync"
 

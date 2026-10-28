@@ -58,13 +58,17 @@ How the bridge works, manual setup and troubleshooting: [docs/SPOTIFY.md](docs/S
 
 ### Updating
 
-Install the new version the same way; it replaces the old one and keeps your settings. If **Settings › Spotify** then shows **Update bridge**, click it.
+From version 2.2.0, VibeSync checks GitHub for new releases at startup and every few hours. When one is available, a banner offers **Download and install**; once downloaded, **Restart to update** installs it and keeps your settings. Nothing is downloaded or installed without your click, and the check can be turned off under **Settings › General**. On Linux, updating the .deb asks for your password.
+
+The portable version cannot replace itself: its banner opens the download page instead. Versions before 2.2.0 have no update check, so install 2.2.0 manually once.
+
+If **Settings › Spotify** shows **Update bridge** after an update, click it.
 
 ## Privacy
 
 - Audio is captured and analyzed locally. Nothing is recorded or uploaded, and the microphone is never used.
 - The Spotify bridge talks to VibeSync only on your own computer (`127.0.0.1`). Your Spotify login never reaches VibeSync.
-- Network requests: album covers from Spotify's image servers, lyrics from Spotify and LRCLIB. There is no telemetry.
+- Network requests: album covers from Spotify's image servers, lyrics from Spotify and LRCLIB, and the update check against this repository's GitHub releases. There is no telemetry.
 
 ## Development
 

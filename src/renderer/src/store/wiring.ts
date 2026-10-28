@@ -11,6 +11,7 @@ import { useLyricsStore } from '../components/Lyrics'
 import { useSpotifyQueueStore } from './spotifyQueueStore'
 import { useTrackStore } from './trackStore'
 import { useUiStore } from './uiStore'
+import { useUpdateStore } from './updateStore'
 
 let initialized = false
 let browserCaptureActive = false
@@ -110,6 +111,9 @@ export async function initializeApp(): Promise<void> {
   // Subscribe before fetching so startup and reconnect updates are not lost.
   api.lyrics.onChange(state => useLyricsStore.setState({ state }))
   try { useLyricsStore.setState({ state: await api.lyrics.get() }) } catch { /* optional */ }
+
+  api.app.onUpdateStatus(state => useUpdateStore.setState({ state }))
+  try { useUpdateStore.setState({ state: await api.app.getUpdateStatus() }) } catch { /* optional */ }
 
   // Window state. Pause rendering entirely while the window is not on screen.
   const applyWindowState = (s: WindowState): void => {

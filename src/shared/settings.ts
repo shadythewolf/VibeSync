@@ -118,7 +118,7 @@ export interface LyricsSettings {
 }
 
 export interface Settings {
-  version: 2
+  version: 3
   general: GeneralSettings
   audio: AudioSettings
   visualizer: VisualizerSettings
@@ -181,7 +181,7 @@ export const SETTINGS_LIMITS = {
 } as const
 
 export const DEFAULT_SETTINGS: Settings = {
-  version: 2,
+  version: 3,
   general: {
     startWithWindows: false,
     startMinimized: false,
@@ -190,7 +190,7 @@ export const DEFAULT_SETTINGS: Settings = {
     closeBehavior: 'quit',
     firstRunCompleted: false,
     lastMode: 'visualizer',
-    checkForUpdates: false,
+    checkForUpdates: true,
     autoHideUi: true,
     keepScreenAwake: true,
     hardwareAcceleration: true
@@ -318,6 +318,8 @@ export function validateSettings(input: unknown, base: Settings = DEFAULT_SETTIN
   const L = SETTINGS_LIMITS
   // Upgrade the former default once, without resetting other chosen intensities.
   const legacyBackgroundDefault = (src.version === undefined || src.version === 1) && c.backgroundIntensity === 0.55
+  // Before v3 the update toggle was disabled (no feed), so a stored `false` was never a user choice.
+  const legacyUpdateDefault = typeof src.version !== 'number' || src.version < 3
 
   const minDb = num(a.minDb, base.audio.minDb, L.minDb.min, L.minDb.max)
   let maxDb = num(a.maxDb, base.audio.maxDb, L.maxDb.min, L.maxDb.max)
@@ -328,7 +330,7 @@ export function validateSettings(input: unknown, base: Settings = DEFAULT_SETTIN
     typeof deviceIdRaw === 'string' && deviceIdRaw.length > 0 && deviceIdRaw.length < 512 ? deviceIdRaw : null
 
   return {
-    version: 2,
+    version: 3,
     general: {
       startWithWindows: bool(g.startWithWindows, base.general.startWithWindows),
       startMinimized: bool(g.startMinimized, base.general.startMinimized),
@@ -341,7 +343,7 @@ export function validateSettings(input: unknown, base: Settings = DEFAULT_SETTIN
       closeBehavior: oneOf<CloseBehavior>(g.closeBehavior, base.general.closeBehavior, ['quit', 'tray']),
       firstRunCompleted: bool(g.firstRunCompleted, base.general.firstRunCompleted),
       lastMode: oneOf<VisualMode>(g.lastMode, base.general.lastMode, VISUAL_MODES),
-      checkForUpdates: bool(g.checkForUpdates, base.general.checkForUpdates),
+      checkForUpdates: legacyUpdateDefault ? true : bool(g.checkForUpdates, base.general.checkForUpdates),
       autoHideUi: bool(g.autoHideUi, base.general.autoHideUi),
       keepScreenAwake: bool(g.keepScreenAwake, base.general.keepScreenAwake),
       hardwareAcceleration: bool(g.hardwareAcceleration, base.general.hardwareAcceleration)
