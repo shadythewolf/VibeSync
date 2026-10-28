@@ -1,10 +1,18 @@
 # VibeSync
 
-Shady's Visualizer fork of [VibeDeck](https://github.com/dhanush-the-versatile/VibeDeck) by Amara Dhanush Kumar. The original MIT license is preserved in LICENSE. The version is defined in package.json.
+VibeSync is a music visualizer for Windows and Linux. It listens to whatever your computer is playing and turns it into a live spectrum, without plugins and without ever opening the microphone.
 
-VibeSync visualizes system audio on Windows and Linux. It includes album artwork colors, synchronized lyrics and an optional Up next preview. Long artist lists wrap without hiding names. The Visualizer is the only display mode.
+Connect Spotify Desktop and it also shows the current song, colors the visualizer from the album artwork, previews the next song and displays synchronized lyrics.
 
-Spotify Desktop with Spicetify and bridge 2.0.1 is the single Spotify integration. The bridge supplies title, every available artist, album, cover, playback time, duration, pause and the next song from the local queue. Playback and Up next work with lyrics disabled and update locally about once per second. There is no Developer Client ID, OAuth flow or Spotify Web API song/queue polling. Spotify lyrics and LRCLIB remain the synchronized lyric sources. Cover images and lyrics still use network requests. Native helper metadata remains a fallback for other media players.
+VibeSync is a fork of [VibeDeck](https://github.com/dhanush-the-versatile/VibeDeck) by Amara Dhanush Kumar.
+
+## Features
+
+- Reacts to any audio app: Spotify, browsers, games, video players
+- Album artwork colors for the visualizer
+- Current song with all artists, playback progress and an Up next preview
+- Synchronized lyrics from Spotify, with [LRCLIB](https://lrclib.net) as fallback
+- Fullscreen, always on top, tray mode and keeping the screen awake while it has focus
 
 ## Install
 
@@ -46,44 +54,40 @@ VibeSync visualizes any audio without this. Connecting Spotify adds song details
 2. Install [Spicetify](https://spicetify.app/docs/getting-started).
 3. In VibeSync, open **Settings › Spotify** and click **Install bridge** (also offered on first launch). Spotify restarts once and connects automatically.
 
-After a Spotify or VibeSync update, the same row shows **Update bridge** when needed.
+How the bridge works, manual setup and troubleshooting: [docs/SPOTIFY.md](docs/SPOTIFY.md).
 
-More details: [Installation](docs/INSTALLATION.txt), [Lyrics and Spotify](docs/LYRICS.txt), [Updating](docs/UPDATE.txt).
+### Updating
+
+Install the new version the same way; it replaces the old one and keeps your settings. If **Settings › Spotify** then shows **Update bridge**, click it.
+
+## Privacy
+
+- Audio is captured and analyzed locally. Nothing is recorded or uploaded, and the microphone is never used.
+- The Spotify bridge talks to VibeSync only on your own computer (`127.0.0.1`). Your Spotify login never reaches VibeSync.
+- Network requests: album covers from Spotify's image servers, lyrics from Spotify and LRCLIB. There is no telemetry.
 
 ## Development
 
-Building from source needs Node.js (see below) and Git:
+Building from source needs Git and Node.js 22.12+ or 24:
 
 ```sh
 git clone https://github.com/shadythewolf/VibeSync.git
 cd VibeSync
 npm ci
-npm run typecheck
-npm run test:unit
-npm run build
 npm run dev
 ```
 
-Use a Node.js version supported by the locked dependencies, such as Node 22.12+ within the 22 release line or Node 24. The installed Vitest package defines the supported versions in its engines field. On Windows, if PowerShell blocks `npm`, use `npm.cmd` instead.
+On Windows, if PowerShell blocks `npm`, use `npm.cmd` instead.
 
-Build a Linux AppImage and .deb with npm run dist:linux; scripts/install-linux.sh installs the AppImage on other distributions. Build Windows installers on Windows with npm run dist. The native Windows helper requires .NET Framework 4.8; Linux capture uses pactl and parec.
+| Command | Does |
+|---|---|
+| `npm run typecheck` | TypeScript checks |
+| `npm run test:unit` | Unit tests |
+| `npm run dist` | Windows installer and portable build (needs .NET Framework 4.8 for the audio helper) |
+| `npm run dist:linux` | Linux AppImage and .deb (run on Linux) |
 
-[Architecture](docs/ARCHITECTURE.md), [Development](docs/DEVELOPMENT.md) and [Testing](docs/TESTING.md) describe the current fork. Upstream's documentation is available in the linked original repository.
+More in [Development](docs/DEVELOPMENT.md), [Architecture](docs/ARCHITECTURE.md) and [Testing](docs/TESTING.md).
 
-## Versioning
+## License
 
-Version 2.0.0 removes the previous OAuth integration and requires bridge 2.0.0 in Spotify Desktop. This is an intentional breaking change and increments Major. Existing visualizer, colour, lyrics and queue preferences are preserved. Versions use Major.Minor.Patch: fixes increment Patch, compatible features increment Minor, and breaking changes increment Major.
-
-Version 2.0.2 uses a neutral near-black background (#020203) with background glow off by default. Older profiles migrate the previous 55% default once; other chosen intensities and all other preferences are preserved. Bridge 2.0.0 is unchanged.
-
-Version 2.0.3 uses app-driven local snapshots, immediate reconnection after an established session drops, bounded handshake recovery, and focus/online recovery. Install both app 2.0.3 and bridge 2.0.1. Playback timing helpers can temporarily fail without dropping the rest of the metadata. No Spotify Web API polling is added.
-
-Version 2.0.4 prevents amplifying tiny RGB differences in near-black cover colors. Clearly colored shadows are preserved. Bridge 2.0.1 is unchanged.
-
-Version 2.0.5 keeps black-floor artwork casts such as RGB 2,0,3 subdued and smoothly introduces chromatic amplification as dark colours become distinguishable. Existing cover-area and dark-hue handling remain; bridge 2.0.1 is unchanged.
-
-Version 2.0.6 lowers the neutral artwork visibility floor from RGB 56 to 16 and limits white peak highlights on dark neutral regions. Existing visible greys and chromatic peak behaviour remain. Bridge 2.0.1 is unchanged.
-
-Version 2.1.0 takes the combined area of similar small color accents into account and keeps the outer bars inside the window even at maximum bass zoom. Five colors and the measured cover shares are preserved; bridge 2.0.1 is unchanged.
-
-The cover color order runs from light to dark. The existing mirroring turns this into light in the middle and dark at the edges.
+MIT, see [LICENSE](LICENSE). Third-party notices are in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
