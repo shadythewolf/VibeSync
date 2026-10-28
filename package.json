@@ -8,6 +8,7 @@
   "license": "MIT",
   "private": true,
   "homepage": "https://github.com/shadythewolf/VibeSync",
+  "desktopName": "vibesync.desktop",
   "scripts": {
     "postinstall": "install-electron",
     "dev": "electron-vite dev",
