@@ -8,3 +8,4 @@ build/icons/
 test-results/
 playwright-report/
 .vite/
+.electron-cache/
