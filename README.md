@@ -8,7 +8,7 @@ Spotify Desktop with Spicetify and bridge 2.0.1 is the single Spotify integratio
 
 ## Start and development
 
-End-user instructions: [Installation](docs/INSTALLATION-DE.txt), [Lyrics](docs/LYRICS-DE.txt), [Updates](docs/UPDATE-DE.txt).
+End-user instructions: [Installation](docs/INSTALLATION.txt), [Lyrics](docs/LYRICS.txt), [Updates](docs/UPDATE.txt).
 
 ```sh
 npm ci
@@ -34,12 +34,12 @@ Version 2.0.2 uses a neutral near-black background (#020203) with background glo
 
 Version 2.0.3 uses app-driven local snapshots, immediate reconnection after an established session drops, bounded handshake recovery, and focus/online recovery. Install both app 2.0.3 and bridge 2.0.1. Playback timing helpers can temporarily fail without dropping the rest of the metadata. No Spotify Web API polling is added.
 
-Version 2.0.4 verhindert die Verstärkung minimaler RGB-Unterschiede bei nahezu schwarzen Coverfarben. Eindeutig farbige Schatten bleiben erhalten. Bridge 2.0.1 ist unverändert.
+Version 2.0.4 prevents amplifying tiny RGB differences in near-black cover colors. Clearly colored shadows are preserved. Bridge 2.0.1 is unchanged.
 
 Version 2.0.5 keeps black-floor artwork casts such as RGB 2,0,3 subdued and smoothly introduces chromatic amplification as dark colours become distinguishable. Existing cover-area and dark-hue handling remain; bridge 2.0.1 is unchanged.
 
 Version 2.0.6 lowers the neutral artwork visibility floor from RGB 56 to 16 and limits white peak highlights on dark neutral regions. Existing visible greys and chromatic peak behaviour remain. Bridge 2.0.1 is unchanged.
 
-Version 2.1.0 berücksichtigt die gemeinsame Fläche ähnlicher kleiner Farbakzente und hält äußere Balken auch beim maximalen Bass-Zoom im Fenster. Fünf Farben und gemessene Coveranteile bleiben erhalten; Bridge 2.0.1 ist unverändert.
+Version 2.1.0 takes the combined area of similar small color accents into account and keeps the outer bars inside the window even at maximum bass zoom. Five colors and the measured cover shares are preserved; bridge 2.0.1 is unchanged.
 
-Die Cover-Farbfolge läuft von hell nach dunkel. Die vorhandene Spiegelung ergibt daraus automatisch hell in der Mitte und dunkel außen.
+The cover color order runs from light to dark. The existing mirroring turns this into light in the middle and dark at the edges.

@@ -33,4 +33,4 @@ VIBEDECK_USER_DATA selects an isolated profile for tests. VIBEDECK_LOG_CONSOLE=1
 
 The shipped configuration has no update feed. An HTTPS VIBEDECK_UPDATE_URL or the configured UPDATE_FEED_URL can enable update checks; downloads and installation remain manual. Do not point this fork at upstream's releases without providing compatible artifacts.
 
-See TESTING.md for checks and INSTALLATION-DE.txt for user instructions. The workspace release pipeline is documented in the top-level README.md.
+See TESTING.md for checks and INSTALLATION.txt for user instructions. The workspace release pipeline is documented in the top-level README.md.

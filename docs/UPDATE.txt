@@ -1,0 +1,31 @@
+Updating to VibeSync 2.1.0
+
+This update keeps small color accents whose similar hues were each below the
+previous one-percent threshold. Neighbouring hues now count together for this
+check; single noise pixels are still filtered out. The actual cover shares and
+the limit of five colors are preserved.
+The bars have side margin for the maximum bass zoom, so the outer bars and
+color areas stay inside the window, with and without mirroring. Particles,
+peaks and gloss follow the same layout.
+The cover colors are sorted once from light to dark. Without mirroring, light
+is on the left and dark on the right. Mirroring is unchanged and shows the same
+color order on both sides: light in the middle, dark at the edges. The area
+shares stay assigned to their colors.
+The dark look from 2.0.6 and bridge 2.0.1 are unchanged.
+
+1. Quit VibeSync.
+2. Windows: run the new Setup installer; it replaces the old version.
+   Linux: install the new .deb, or run sh install-linux.sh again.
+3. If Settings > Spotify > Spotify bridge setup shows Update bridge, click it.
+   Spotify restarts once.
+
+The color fix only affects the app. Bridge 2.0.1 is unchanged since 2.0.3.
+If you already have this bridge installed, you can skip step 3.
+First-time install: INSTALLATION.txt.
+Existing profiles are kept, including the #020203 background, colors, lyrics,
+Up Next and keeping the screen awake while the window is active.
+Spotify Desktop must be running and responsive; a frozen or closed Spotify
+process cannot supply current data.
+
+Versions: bug fixes increment Patch (2.1.1), new compatible features
+Minor (2.2.0), breaking changes Major (3.0.0).
