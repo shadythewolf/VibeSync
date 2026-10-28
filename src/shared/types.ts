@@ -155,6 +155,22 @@ export interface UpdateCheckResult {
   message?: string
 }
 
+/** Spicetify bridge setup as seen on disk (independent of a live bridge connection). */
+export interface BridgeSetupStatus {
+  spicetifyFound: boolean
+  /** Version of the bridge shipped with this app. */
+  bundledVersion: string | null
+  /** Version found in Spicetify's Extensions folder; null when not installed. */
+  installedVersion: string | null
+}
+
+export interface BridgeInstallResult {
+  ok: boolean
+  message: string
+  /** Spicetify output for the log / error details. */
+  detail?: string
+}
+
 /** Interleaved float32 PCM chunk delivered to the renderer. */
 export interface PcmChunk {
   sampleRate: number

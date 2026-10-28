@@ -1,0 +1,61 @@
+VibeSync 2.0: Spotify bridge with Spicetify
+
+Requirements
+Spotify Desktop with Spicetify, signed in and open.
+Bridge version 2.0.1 from this package is the only Spotify integration.
+No Spotify developer app, Client ID or separate sign-in in VibeSync is needed.
+
+Install or update the bridge
+In VibeSync, open Settings > Spotify > Spotify bridge setup and click Install bridge
+or Update bridge. VibeSync performs the steps below automatically.
+
+Manually, if the automatic install fails:
+1. Quit Spotify completely.
+2. Show the Extensions folder:
+   spicetify path -e root
+3. Copy Spicetify/vibesync-bridge.js from the ZIP into that folder.
+   Replace the old file. Copying it manually is enough.
+4. If vibedeck-bridge.js is still configured, remove it:
+   spicetify config extensions vibedeck-bridge.js-
+5. Enable and apply the new bridge:
+   spicetify config extensions vibesync-bridge.js
+   spicetify apply
+   If Spicetify says Spotify and backup versions are mismatched (after a Spotify update):
+   spicetify backup apply
+   If Spicetify reports outdated preprocessed data instead:
+   spicetify restore backup apply
+6. Start Spotify and VibeSync.
+
+Features
+The bridge supplies title, all available artists, album, cover address,
+playback time, duration and pause. It also reads the next song from the local
+Spotify queue and updates Up Next on song changes and queue changes.
+The app downloads covers separately from the image server and caches them.
+Song data and the queue are read locally about once per second, even with
+lyrics turned off. There are no song or queue requests to the Spotify Web API.
+
+Turn on lyrics under Settings > Spotify > Synchronized lyrics.
+Pause and seeking follow the same playback time as the progress bar.
+Positive Sync offset values show lyrics earlier, negative values later.
+Lyrics size, Line spacing, Lyrics opacity and Show surrounding lines control the display.
+Missing Spotify lyrics are looked up on LRCLIB; some songs have no
+synchronized lyrics. Spotify lyrics, LRCLIB and covers still need network access.
+
+The connection stays local on ws://127.0.0.1:43821/vibesync.
+Spotify credentials are never sent to VibeSync.
+Connected / Update bridge means an older bridge is still installed.
+Old lyrics-only packages are still accepted but do not replace the complete new
+bridge. The app still accepts the old /vibedeck endpoint.
+After a disconnect or ten seconds without playback data, the app clears stale
+Spotify data and restarts the connection. VibeSync requests fresh data locally
+every second, even when Spotify throttles its own background timers.
+The bridge reconnects a dropped session immediately. It also rechecks the
+connection when you return to Spotify and after network changes.
+Native Windows media data remains a fallback for other players.
+Without Spotify Desktop open with the bridge, Spotify song data, playback time,
+Up Next and Spotify lyrics are not available in VibeSync.
+
+Remove the bridge
+  spicetify config extensions vibesync-bridge.js-
+  spicetify apply
+Afterwards the file can be deleted from Extensions.

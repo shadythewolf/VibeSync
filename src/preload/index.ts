@@ -11,6 +11,8 @@ import type {
   AppInfo,
   AudioDevice,
   AudioStatus,
+  BridgeInstallResult,
+  BridgeSetupStatus,
   BrowserCaptureReport,
   LogLevel,
   PcmChunk,
@@ -75,7 +77,9 @@ const api: VibeDeckApi = {
   },
   spotify: {
     getQueue: () => ipcRenderer.invoke(IPC.spotifyQueueGet) as Promise<SpotifyQueueState>,
-    onQueue: (cb) => on<SpotifyQueueState>(IPC.spotifyQueueChanged, cb)
+    onQueue: (cb) => on<SpotifyQueueState>(IPC.spotifyQueueChanged, cb),
+    getBridgeStatus: () => ipcRenderer.invoke(IPC.spotifyBridgeStatus) as Promise<BridgeSetupStatus>,
+    installBridge: () => ipcRenderer.invoke(IPC.spotifyInstallBridge) as Promise<BridgeInstallResult>
   },
   window: {
     minimize: () => ipcRenderer.send(IPC.windowMinimize),

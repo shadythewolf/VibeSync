@@ -12,6 +12,7 @@ import { IPC } from '../shared/ipc'
 import { CAPTURE_ENGINES, type CaptureEngine, type DeepPartial, type Settings } from '../shared/settings'
 import type { AppInfo, BrowserCaptureReport, LogLevel } from '../shared/types'
 import type { AudioService } from './audioService'
+import { getBridgeSetupStatus, installBridge } from './bridgeInstaller'
 import { isErrorCode } from './errors'
 import { getLogDir, getLogPath, log } from './logger'
 import type { MetadataService } from './metadataService'
@@ -213,6 +214,15 @@ export function registerIpc(services: IpcServices): void {
   ipcMain.handle(IPC.spotifyQueueGet, (event) => {
     requireTrusted(event, IPC.spotifyQueueGet)
     return services.lyrics.getQueue()
+  })
+  ipcMain.handle(IPC.spotifyBridgeStatus, (event) => {
+    requireTrusted(event, IPC.spotifyBridgeStatus)
+    return getBridgeSetupStatus()
+  })
+  ipcMain.handle(IPC.spotifyInstallBridge, (event) => {
+    requireTrusted(event, IPC.spotifyInstallBridge)
+    log('info', 'Spicetify bridge install requested')
+    return installBridge()
   })
   // ----- window ------------------------------------------------------------
   ipcMain.on(IPC.windowMinimize, (event) => {

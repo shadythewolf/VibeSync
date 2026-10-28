@@ -21,6 +21,11 @@ extraResources:
     to: linux-helper
     filter:
       - "**/*.cjs"
+  # Installed into Spicetify by Settings › Spotify › Install bridge.
+  - from: spicetify
+    to: spicetify
+    filter:
+      - "*.js"
 asar: true
 npmRebuild: false
 nodeGypRebuild: false
@@ -64,6 +69,21 @@ linux:
   target:
     - target: AppImage
       arch: [x64]
+    - target: deb
+      arch: [x64]
   category: AudioVideo
   icon: build/icon.png
   artifactName: ${productName}-Linux-${version}.${ext}
+# The .deb installs a menu entry and pulls in pactl/parec, so no chmod, FUSE or manual packages.
+deb:
+  depends:
+    - libgtk-3-0
+    - libnotify4
+    - libnss3
+    - libxss1
+    - libxtst6
+    - xdg-utils
+    - libatspi2.0-0
+    - libuuid1
+    - libsecret-1-0
+    - pulseaudio-utils
