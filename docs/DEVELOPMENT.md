@@ -30,11 +30,11 @@ Linux: `npm run dist:linux` builds the AppImage and a .deb (which depends on `pu
 3. Create a GitHub release tagged `v<version>` and attach from both `dist` folders:
    - `VibeSync-Setup-<version>.exe` and `VibeSync-Setup-<version>.exe.blockmap`
    - `VibeSync-Portable.exe`
-   - `VibeSync-Linux-<version>.deb`, `VibeSync-Linux-<version>.AppImage` and `VibeSync-Linux-<version>.AppImage.blockmap`
+   - `VibeSync-Linux-<version>.deb` and `VibeSync-Linux-<version>.AppImage` (its blockmap is embedded in the file)
    - `latest.yml` (Windows) and `latest-linux.yml` (Linux)
    - `scripts/install-linux.sh` and a `SHA256SUMS.txt`
 
-The in-app updater reads `latest.yml` / `latest-linux.yml` from the newest release; without them, installed copies never see the update. The `.blockmap` files let it download only the changed parts.
+The in-app updater reads `latest.yml` / `latest-linux.yml` from the newest release; without them, installed copies never see the update. Upload the `.yml` files from the same build as the installers: they contain each file's sha512, and the updater rejects a mismatch. The blockmaps let it download only the changed parts.
 
 ## Updates
 
