@@ -18,6 +18,9 @@ export const PALETTES: Record<Exclude<ColorMode, 'custom' | 'albumArt'>, string[
 const LUT_SIZE = 256
 const ALBUM_ART_TRANSITION_MS = 900
 const ALBUM_ART_TRANSITION_STEPS = 18
+// Brightness floors (Rec. 709 luminance, 0..255) for album-art colours on the near-black background.
+const ARTWORK_MINIMUM = 112
+const ARTWORK_NEUTRAL_MINIMUM = 38
 export const ALBUM_ART_FALLBACK = ['#9CA3AF', '#D1D5DB']
 
 export interface Rgb {
@@ -168,8 +171,8 @@ function sampleGradient(anchors: { color: string; position: number }[], t: numbe
 function visibleArtworkColor(hex: string): string {
   const rgb=hexToRgb(hex)
   const brightness=rgb.r*0.2126+rgb.g*0.7152+rgb.b*0.0722
-  const minimum=56
-  const neutralMinimum=16
+  const minimum=ARTWORK_MINIMUM
+  const neutralMinimum=ARTWORK_NEUTRAL_MINIMUM
   if (brightness >= minimum) return hex
   if (isNeutralColor(rgb)) {
     const lift=Math.max(0,neutralMinimum-brightness)
@@ -182,7 +185,7 @@ function visibleArtworkColor(hex: string): string {
   const scale=Math.max(1,minimum/strongest)
   // Fade in ratio-preserving amplification only as the source leaves the black
   // floor. Tiny absolute differences must not become vivid through a large gain.
-  const confidence=Math.max(0,Math.min(1,(strongest-4)/12))
+  const confidence=Math.max(0,Math.min(1,(strongest-4)/24))
   const chromaWeight=confidence*confidence*(3-2*confidence)
   const lift=Math.max(0,neutralMinimum-brightness)
   return rgbToHex(mixRgb(
@@ -209,7 +212,7 @@ function buildTheme(colors: ColorSettings, stopsHex: ArtworkPalette, applyCovera
     // Keep their local peak response subtle, fading to the normal highlight for
     // brighter neutrals. Coloured bar highlights keep their existing response.
     const brightness=c.r*0.2126+c.g*0.7152+c.b*0.0722
-    const amount=Math.min(1,brightness/96)
+    const amount=Math.max(0,Math.min(1,(brightness-(ARTWORK_NEUTRAL_MINIMUM-8))/40))
     sheenLut[i]=colors.mode==='albumArt' && isNeutralColor(c) ? amount*amount*(3-2*amount) : 1
     const strength=0.35*sheenLut[i]
     brightLut[i] = rgbToHex({ r: c.r + (255 - c.r) * strength, g: c.g + (255 - c.g) * strength, b: c.b + (255 - c.b) * strength })
