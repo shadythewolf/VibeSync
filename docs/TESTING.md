@@ -14,7 +14,7 @@ Artwork color regressions use real cover histograms from `tests/fixtures`: near-
 
 ## Hardware and platform checks
 
-`npm run test:integration` runs the native Windows loopback test; it needs a playback device and a built helper. `npm run qa:fps` measures the visualizer at 1920x1080 with audio playing. `npm run qa:smoothness` profiles what averages hide: frame-time percentiles, long tasks and how evenly audio chunks arrive (choppy bars with a steady frame rate usually mean sparse or bunched chunks).
+`npm run test:integration` runs the native Windows loopback test; it needs a playback device and a built helper, and plays a 4 s tone through the speakers. `npm test` leaves it out for that reason. `npm run qa:fps` measures the visualizer at 1920x1080 with audio playing. `npm run qa:smoothness` profiles what averages hide: frame-time percentiles, long tasks and how evenly audio chunks arrive (choppy bars with a steady frame rate usually mean sparse or bunched chunks).
 
 `scripts/verify-install.ps1` and `scripts/verify-uninstall.ps1` check an installed Windows build.
 
