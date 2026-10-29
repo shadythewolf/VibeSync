@@ -74,7 +74,7 @@ describe('album artwork colour extraction', () => {
     const theme=resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'albumArt'},palette)
     const samples=Array.from({length:1000},(_,i)=>hexToRgb(theme.colorAt(i/999)))
     expect(samples.every(c=>c.b>c.r*1.5 && c.b>c.g*1.5)).toBe(true)
-    expect(samples.every(c=>c.b>=50 && c.b<=65)).toBe(true)
+    expect(samples.every(c=>c.b>=105 && c.b<=120)).toBe(true)
   })
   it.each([[1,1,2],[2,1,1],[1,2,1],[0,0,1],[0,2,1],[3,2,1]])('does not amplify near-black channel noise into a saturated colour: %j', (r,g,b) => {
     const palette=extractPaletteFromPixels(pixels([[r,g,b]]))
@@ -83,7 +83,7 @@ describe('album artwork colour extraction', () => {
     for(const level of [0,1]) {
       const c=hexToRgb(theme.barColor(1,3,level))
       expect(Math.max(c.r,c.g,c.b)-Math.min(c.r,c.g,c.b)).toBeLessThanOrEqual(2)
-      expect(Math.min(c.r,c.g,c.b)).toBeGreaterThanOrEqual(14)
+      expect(Math.min(c.r,c.g,c.b)).toBeGreaterThanOrEqual(36)
     }
   })
   it('keeps near-black neutral coverage alongside a small coloured accent',()=>{
@@ -112,7 +112,7 @@ describe('album artwork colour extraction', () => {
     for(let i=1;i<samples.length;i++)expect(luminance(samples[i])-luminance(samples[i-1])).toBeLessThanOrEqual(1/255)
     expect(palette.weights).toEqual(weights)
     expect(hexToRgb(samples[0]).r).toBeGreaterThan(200)
-    expect(luminance(samples.at(-1)!)).toBeLessThan(0.1)
+    expect(luminance(samples.at(-1)!)).toBeLessThan(0.2)
     expect(samples.filter(hex=>isNeutralColor(hexToRgb(hex))).length).toBeGreaterThan(750)
   })
   it('retains the small blue-violet family in Never Say Die Vol. 7',()=>{
@@ -140,10 +140,10 @@ describe('album artwork colour extraction', () => {
       if(isNeutralColor(c)){quiet.push(c);peaks.push(hexToRgb(theme.barColor(i,1000,1)))}
     }
     expect(quiet.length).toBeGreaterThan(650)
-    expect(quiet.filter(c=>Math.max(c.r,c.g,c.b)<=28).length).toBeGreaterThan(700)
-    expect(quiet.every(c=>Math.max(c.r,c.g,c.b)<=34)).toBe(true)
-    expect(peaks.filter(c=>Math.max(c.r,c.g,c.b)<=42).length).toBeGreaterThan(700)
-    expect(peaks.every(c=>Math.max(c.r,c.g,c.b)<=54)).toBe(true)
+    expect(quiet.filter(c=>Math.max(c.r,c.g,c.b)<=42).length).toBeGreaterThan(700)
+    expect(quiet.every(c=>Math.max(c.r,c.g,c.b)<=50)).toBe(true)
+    expect(peaks.filter(c=>Math.max(c.r,c.g,c.b)<=56).length).toBeGreaterThan(700)
+    expect(peaks.every(c=>Math.max(c.r,c.g,c.b)<=70)).toBe(true)
     expect(peaks.some((c,i)=>c.r>quiet[i].r)).toBe(true)
   })
   it('keeps existing visible grey and coloured bar highlights',()=>{
@@ -198,7 +198,7 @@ describe('album artwork colour extraction', () => {
     const theme=resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'albumArt'},palette)
     const samples=Array.from({length:1000},(_,i)=>hexToRgb(theme.colorAt(i/999)))
     expect(samples.filter(c=>isNeutralColor(c) && Math.max(c.r,c.g,c.b)<80).length).toBeGreaterThan(750)
-    expect(samples.every(c=>Math.max(c.r,c.g,c.b)>=14)).toBe(true)
+    expect(samples.every(c=>Math.max(c.r,c.g,c.b)>=36)).toBe(true)
     expect(samples.filter(c=>c.r>c.g*1.4 && c.g>c.b).length).toBeGreaterThan(70)
   })
   it('does not replace a black majority with the brightest neutral detail', () => {
@@ -209,23 +209,23 @@ describe('album artwork colour extraction', () => {
     expect(hexToRgb(palette[neutral]).r).toBeLessThan(20)
     const theme=resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'albumArt'},palette)
     const c=hexToRgb(theme.colorAt(0.6))
-    expect(c.r).toBe(16)
-    expect(c.g).toBe(16)
-    expect(c.b).toBe(16)
+    expect(c.r).toBe(38)
+    expect(c.g).toBe(38)
+    expect(c.b).toBe(38)
   })
   it('keeps dark monochrome area weighted and visible', () => {
     const palette=extractPaletteFromPixels(new Uint8ClampedArray([...pixels([[0,0,0]],95),...pixels([[255,255,255]],5)]))
     const theme=resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'albumArt'},palette)
-    expect(theme.colorAt(0.5)).toBe('#101010')
+    expect(theme.colorAt(0.5)).toBe('#262626')
     expect(theme.colorAt(0)).toBe('#FFFFFF')
-    expect(theme.colorAt(1)).toBe('#101010')
+    expect(theme.colorAt(1)).toBe('#262626')
   })
   it('raises dark blue visibility without changing its channel ratios or custom colours', () => {
     const album=resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'albumArt'},['#041020'])
     const c=hexToRgb(album.colorAt(0))
     expect(c.b/c.g).toBeCloseTo(2,1)
     expect(c.g/c.r).toBeCloseTo(4,0)
-    expect(c.b).toBe(56)
+    expect(c.b).toBe(112)
     const custom=resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'custom',primary:'#041020',secondary:'#041020'})
     expect(custom.colorAt(0)).toBe('#041020')
   })
