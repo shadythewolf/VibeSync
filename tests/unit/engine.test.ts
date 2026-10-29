@@ -379,6 +379,36 @@ describe('AudioEngine', () => {
     expect(f.hasSignal).toBe(false)
   })
 
+  it('slides the analysis window between chunks instead of freezing until the next one', () => {
+    const h = makeHarness()
+    // 60 ms chunks (what NAudio's default loopback buffer delivered) under 60 fps rendering.
+    const chunkMs = 60
+    const tone: Tone[] = [{ hz: 110, amp: 0.5 }]
+    let untilChunk = 0
+    let unchanged = 0
+    let between = 0
+    let prev: number[] = []
+    for (let i = 0; i < 120; i++) {
+      h.advance(FRAME_MS)
+      untilChunk -= FRAME_MS
+      const pushed = untilChunk <= 0
+      if (pushed) {
+        untilChunk += chunkMs
+        h.push(tone, (SAMPLE_RATE * chunkMs) / 1000)
+      }
+      h.engine.update(h.now())
+      const snap = Array.from(h.engine.frame.waveform.subarray(0, 64))
+      if (i > 10 && !pushed) {
+        between++
+        if (snap.every((v, k) => v === prev[k])) unchanged++
+      }
+      prev = snap
+    }
+    // Frames without a new chunk still see newer audio (at most the odd catch-up stall).
+    expect(between).toBeGreaterThan(50)
+    expect(unchanged / between).toBeLessThan(0.1)
+  })
+
   it('ignores malformed chunks', () => {
     const h = makeHarness()
     const f = h.engine.frame
