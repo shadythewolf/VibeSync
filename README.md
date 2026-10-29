@@ -22,9 +22,13 @@ Download the files for your system from the [latest release](https://github.com/
 
 1. Download `VibeSync-Setup-<version>.exe` and run it.
 2. Windows SmartScreen may say "Windows protected your PC", because the app is not code-signed. Click **More info**, then **Run anyway**.
-3. Follow the installer. VibeSync opens when it finishes.
+3. Click **Install**. **Options** lets you pick the folder and skip the desktop shortcut. When it finishes, click **Launch VibeSync**.
 
-No installation wanted? `VibeSync-Portable.exe` runs without installing.
+No installation wanted? `VibeSync-Portable.exe` runs without installing. The release also lists `VibeSync-Package-<version>.exe`: that's what the built-in updater downloads, so you don't need it.
+
+To uninstall, go to **Settings › Apps › Installed apps**, open the menu next to VibeSync and click **Uninstall**. Choose **Keep my settings** if you might come back, or **Remove everything** to also delete your settings, caches, logs and the Spotify bridge.
+
+For scripted installs, `VibeSync-Setup-<version>.exe /S` installs silently (add `/D=<folder>` as the last argument to choose the folder).
 
 ### Linux (x86_64)
 

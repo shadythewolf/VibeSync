@@ -45,7 +45,12 @@ win:
     - target: portable
       arch: [x64]
   icon: build/icon.ico
-  artifactName: ${productName}-Setup-${version}.${ext}
+  # The custom uninstall window; installer/installer.nsh opens it from the NSIS uninstaller.
+  extraResources:
+    - from: installer/setup/bin
+      to: uninstaller
+      filter:
+        - Uninstall.exe
   requestedExecutionLevel: asInvoker
   signAndEditExecutable: true
   verifyUpdateCodeSignature: false
@@ -54,7 +59,8 @@ nsis:
   perMachine: false
   allowElevation: true
   allowToChangeInstallationDirectory: true
-  createDesktopShortcut: always
+  # true, not always: updates then leave a deleted (or never created) desktop shortcut alone.
+  createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: VibeSync
   menuCategory: false
@@ -64,7 +70,9 @@ nsis:
   uninstallerIcon: build/icon.ico
   installerHeaderIcon: build/icon.ico
   uninstallDisplayName: VibeSync
-  artifactName: ${productName}-Setup-${version}.${ext}
+  # The package the custom setup wraps (installer/setup) and that the updater downloads;
+  # people download VibeSync-Setup-<version>.exe instead.
+  artifactName: ${productName}-Package-${version}.${ext}
   include: installer/installer.nsh
   displayLanguageSelector: false
 portable:

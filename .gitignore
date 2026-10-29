@@ -9,3 +9,5 @@ test-results/
 playwright-report/
 .vite/
 .electron-cache/
+installer/setup/bin/
+installer/setup/obj/
