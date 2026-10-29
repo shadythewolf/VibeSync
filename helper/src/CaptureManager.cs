@@ -16,7 +16,7 @@ namespace VibeDeck.Helper
         private readonly MMDeviceEnumerator _enumerator;
         private readonly object _lock = new object();
 
-        private WasapiLoopbackCapture _capture;
+        private LowLatencyLoopbackCapture _capture;
         private MMDevice _device;
         private WaveFormat _format;
         private string _requestedId;      // null => follow default
@@ -27,7 +27,8 @@ namespace VibeDeck.Helper
         private Timer _restartTimer;
         private Timer _devicesTimer;
 
-        // Accumulator (interleaved float32) flushed every ~20 ms.
+        // Accumulator (interleaved float32), flushed once it holds ~10 ms: in practice every
+        // read (~15 ms, see LowLatencyLoopbackCapture) goes out on its own.
         private float[] _acc = new float[0];
         private int _accCount;
         private int _flushThreshold;
@@ -127,7 +128,7 @@ namespace VibeDeck.Helper
 
         public void Start(string deviceId)
         {
-            WasapiLoopbackCapture oldCap; MMDevice oldDev;
+            LowLatencyLoopbackCapture oldCap; MMDevice oldDev;
             lock (_lock)
             {
                 _requestedId = string.IsNullOrEmpty(deviceId) ? null : deviceId;
@@ -146,7 +147,7 @@ namespace VibeDeck.Helper
 
         public void Stop()
         {
-            WasapiLoopbackCapture oldCap; MMDevice oldDev;
+            LowLatencyLoopbackCapture oldCap; MMDevice oldDev;
             lock (_lock)
             {
                 _wantRunning = false;
@@ -162,7 +163,7 @@ namespace VibeDeck.Helper
 
         private void RestartNow()
         {
-            WasapiLoopbackCapture oldCap; MMDevice oldDev;
+            LowLatencyLoopbackCapture oldCap; MMDevice oldDev;
             lock (_lock)
             {
                 _restartTimer = null;
@@ -177,7 +178,7 @@ namespace VibeDeck.Helper
         }
 
         /// <summary>Must be called under _lock. Removes the current capture from the manager without stopping it.</summary>
-        private void DetachLocked(out WasapiLoopbackCapture cap, out MMDevice dev)
+        private void DetachLocked(out LowLatencyLoopbackCapture cap, out MMDevice dev)
         {
             cap = _capture;
             dev = _device;
@@ -192,7 +193,7 @@ namespace VibeDeck.Helper
         }
 
         /// <summary>Must be called WITHOUT holding _lock.</summary>
-        private static void DisposeCapture(WasapiLoopbackCapture cap, MMDevice dev)
+        private static void DisposeCapture(LowLatencyLoopbackCapture cap, MMDevice dev)
         {
             if (cap != null)
             {
@@ -245,7 +246,7 @@ namespace VibeDeck.Helper
 
             try
             {
-                var cap = new WasapiLoopbackCapture(dev);
+                var cap = new LowLatencyLoopbackCapture(dev);
                 var fmt = cap.WaveFormat;
                 if (!IsSupported(fmt))
                 {
@@ -263,7 +264,7 @@ namespace VibeDeck.Helper
                 _accCount = 0;
                 int capacity = fmt.SampleRate * fmt.Channels; // one second
                 if (_acc.Length < capacity) _acc = new float[capacity];
-                _flushThreshold = Math.Max(fmt.Channels * 64, (fmt.SampleRate / 50) * fmt.Channels); // ~20 ms
+                _flushThreshold = Math.Max(fmt.Channels * 64, (fmt.SampleRate / 100) * fmt.Channels); // ~10 ms
                 _stoppingIntentionally = false;
                 cap.StartRecording();
                 _lastDataTicks = DateTime.UtcNow.Ticks;
@@ -547,7 +548,7 @@ namespace VibeDeck.Helper
 
         public void Dispose()
         {
-            WasapiLoopbackCapture oldCap; MMDevice oldDev;
+            LowLatencyLoopbackCapture oldCap; MMDevice oldDev;
             lock (_lock)
             {
                 _wantRunning = false;

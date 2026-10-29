@@ -40,6 +40,10 @@ const MAX_BAR_COUNT = 1024
 
 /** PCM must have arrived within this many ms for `hasSignal`. */
 const SIGNAL_TIMEOUT_MS = 250
+/** Smoothing of the typical PCM chunk size. */
+const CHUNK_EMA = 0.1
+/** Most audio (in typical chunks) the analysis may trail behind the newest sample. */
+const MAX_LAG_CHUNKS = 1.5
 /** Without signal for this long the tempo readout is cleared. */
 const BPM_TIMEOUT_MS = 3000
 /** Without signal for this long the session ends (key / beat state is cleared). */
@@ -182,6 +186,15 @@ export class AudioEngine implements IAudioEngine {
   private validFrames = 0
   /** Zeros shifted in during silence since the last PCM chunk (stops once the ring is flat). */
   private silenceZeros = 0
+  /**
+   * Frames received but not yet "played". Audio arrives in chunks (~10-60 ms) while frames
+   * render at up to the display rate; reading the newest samples would freeze the spectrum
+   * between chunks and jump on each one. Reading this far behind writePos instead slides
+   * the analysis window at real time, reaching the newest sample as the next chunk lands.
+   */
+  private lagFrames = 0
+  /** Typical chunk size (EMA); caps lagFrames so bunched chunks can't build up latency. */
+  private chunkFrames = 0
 
   private lastPcmTime = -Infinity
   private firstPcmTime = -1
@@ -254,6 +267,10 @@ export class AudioEngine implements IAudioEngine {
     if (!this.sessionActive || now - this.lastPcmTime > SESSION_GAP_MS) this.beginSession(now)
     this.lastPcmTime = now
     this.silenceZeros = 0
+    this.chunkFrames = this.chunkFrames === 0 ? frames : this.chunkFrames + (frames - this.chunkFrames) * CHUNK_EMA
+    this.lagFrames += frames
+    const maxLag = this.chunkFrames * MAX_LAG_CHUNKS
+    if (this.lagFrames > maxLag) this.lagFrames = maxLag
 
     const mono = this.ringMono
     const left = this.ringL
@@ -328,6 +345,11 @@ export class AudioEngine implements IAudioEngine {
     let loudRaw = 0
     let flux = 0
 
+    // Advance the read cursor by the elapsed time (see lagFrames).
+    this.lagFrames -= dt * this.sampleRate
+    if (this.lagFrames < 0 || !hasSignal) this.lagFrames = 0
+    const readEnd = this.writePos - Math.round(this.lagFrames)
+
     if (hasSignal) {
       this.spectrumZeroed = false
 
@@ -338,7 +360,7 @@ export class AudioEngine implements IAudioEngine {
       const zero = n - avail
       if (zero > 0) input.fill(0, 0, zero)
       const mono = this.ringMono
-      const base = this.writePos - n
+      const base = readEnd - n
       for (let i = zero; i < n; i++) input[i] = mono[(base + i) & RING_MASK] * sens
       this.fft.magnitudes(input, this.mags, true)
 
@@ -381,7 +403,7 @@ export class AudioEngine implements IAudioEngine {
         const right = this.ringR
         let sumL = 0
         let sumR = 0
-        const start = this.writePos - m
+        const start = readEnd - m
         for (let j = 0; j < m; j++) {
           const idx = (start + j) & RING_MASK
           const l = left[idx] * sens
@@ -518,7 +540,7 @@ export class AudioEngine implements IAudioEngine {
     frame.beatIntensity = beat ? 1 : decayed < 1e-4 ? 0 : decayed
 
     // --- waveforms -----------------------------------------------------------------
-    this.copyWaveforms(sens)
+    this.copyWaveforms(sens, readEnd)
 
     // --- slow subscribers ----------------------------------------------------------
     const subs = this.slow
@@ -566,6 +588,8 @@ export class AudioEngine implements IAudioEngine {
     this.writePos = 0
     this.validFrames = 0
     this.silenceZeros = 0
+    this.lagFrames = 0
+    this.chunkFrames = 0
     this.lastPcmTime = -Infinity
     this.firstPcmTime = -1
     this.lastClipTime = -Infinity
@@ -693,7 +717,7 @@ export class AudioEngine implements IAudioEngine {
     else this.fluxPrev.fill(0)
   }
 
-  private copyWaveforms(sens: number): void {
+  private copyWaveforms(sens: number, readEnd: number): void {
     const f = this.frame
     const wf = f.waveform
     const wl = f.waveformL
@@ -701,7 +725,7 @@ export class AudioEngine implements IAudioEngine {
     const mono = this.ringMono
     const left = this.ringL
     const right = this.ringR
-    const base = this.writePos - WAVEFORM_LENGTH
+    const base = readEnd - WAVEFORM_LENGTH
     for (let i = 0; i < WAVEFORM_LENGTH; i++) {
       const idx = (base + i) & RING_MASK
       let m = mono[idx] * sens
