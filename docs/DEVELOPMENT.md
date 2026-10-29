@@ -17,6 +17,8 @@ In development on Windows, audio falls back to Chromium loopback capture until t
 
 Windows: `npm run dist` builds the native helper, regenerates icons and produces the NSIS installer and portable executable in `dist`. `helper/build.ps1` uses the C# compiler shipped with .NET Framework 4.8, Windows WinMD metadata and the included NAudio libraries.
 
+The Windows setup people download, `VibeSync-Setup-<version>.exe`, is a small WPF app (`installer/setup`) wrapped around electron-builder's NSIS package, `VibeSync-Package-<version>.exe`. It runs the package silently with the chosen folder and shortcut option and shows its own progress, so NSIS still does the actual installing and electron-updater keeps updating through the package. `installer/setup/build.ps1` compiles it with the same .NET Framework compiler: `-Mode uninstall` (before electron-builder) builds the uninstall window that ships in `resources/uninstaller`, `-Mode setup` (after) builds the setup around the package. The NSIS uninstaller opens that window from `customUnInit` in `installer/installer.nsh` unless it runs silently, and the window runs the uninstaller again with `/S`, adding `--delete-app-data` for "Remove everything".
+
 Linux: `npm run dist:linux` builds the AppImage and a .deb (which depends on `pulseaudio-utils`) in `dist`. Set `ELECTRON_BUILDER_CACHE` to a writable directory if the default cache is unavailable. Ship `scripts/install-linux.sh` next to the AppImage for non-Debian distributions.
 
 `npm run icons` regenerates the icon and tray assets. `npm run build` writes the main, preload and renderer bundles to `out`.
@@ -28,7 +30,7 @@ Linux: `npm run dist:linux` builds the AppImage and a .deb (which depends on `pu
 1. Bump `version` in package.json (semantic versioning: fixes increment Patch, compatible features Minor, breaking changes Major).
 2. Build on Windows (`npm run dist`) and on Linux (`npm run dist:linux`). Builds never upload anything.
 3. Create a GitHub release tagged `v<version>` and attach from both `dist` folders:
-   - `VibeSync-Setup-<version>.exe` and `VibeSync-Setup-<version>.exe.blockmap`
+   - `VibeSync-Setup-<version>.exe`, plus `VibeSync-Package-<version>.exe` and its `.blockmap` for the updater
    - `VibeSync-Portable.exe`
    - `VibeSync-Linux-<version>.deb` and `VibeSync-Linux-<version>.AppImage` (its blockmap is embedded in the file)
    - `latest.yml` (Windows) and `latest-linux.yml` (Linux)
