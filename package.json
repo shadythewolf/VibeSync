@@ -1,7 +1,7 @@
 {
   "name": "vibesync",
   "productName": "VibeSync",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "description": "VibeSync - VibeDeck fork with Spotify, synchronized lyrics and album artwork colors",
   "main": "./out/main/index.js",
   "author": "Shady",
