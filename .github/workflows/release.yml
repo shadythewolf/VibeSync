@@ -1,0 +1,80 @@
+# Builds the Windows and Linux packages on GitHub's runners and attaches them to a
+# draft release. Push a tag v<version> (matching package.json) to start a release;
+# changes to this file in a pull request run the builds only, as a dry run.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  pull_request:
+    paths: ['.github/workflows/release.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            script: dist
+          - os: ubuntu-latest
+            script: dist:linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Check tag matches package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version $version" >&2
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm test
+      - run: npm run ${{ matrix.script }}
+      # Only the files the release needs; the updater reads latest.yml / latest-linux.yml.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ runner.os }}
+          if-no-files-found: error
+          path: |
+            dist/*.exe
+            dist/*.exe.blockmap
+            dist/*.AppImage
+            dist/*.deb
+            dist/latest*.yml
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: assets
+          merge-multiple: true
+      - name: Add installer script and checksums
+        working-directory: assets
+        run: |
+          cp ../scripts/install-linux.sh .
+          sha256sum -b *.exe *.exe.blockmap *.AppImage *.deb install-linux.sh > SHA256SUMS.txt
+          ls -l
+      # A draft is not visible to the updater; publish it after checking the files and notes.
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" assets/* \
+            --draft \
+            --title "VibeSync ${GITHUB_REF_NAME#v}" \
+            --notes "Release notes to follow."
