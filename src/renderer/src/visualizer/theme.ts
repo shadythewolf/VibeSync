@@ -18,17 +18,11 @@ export const PALETTES: Record<Exclude<ColorMode, 'custom' | 'albumArt'>, string[
 const LUT_SIZE = 256
 const ALBUM_ART_TRANSITION_MS = 900
 const ALBUM_ART_TRANSITION_STEPS = 18
-// Brightness floors (Rec. 709 luminance, 0..255) for album-art colours on the near-black background.
-const ARTWORK_MINIMUM = 112
-const ARTWORK_NEUTRAL_MINIMUM = 30
-// Strongest-channel floor for dark tinted colours (a black background with a slight teal or navy
-// cast) when the cover also has a bright colour: lifted just enough to be visible, never further.
-// Lifting them towards ARTWORK_MINIMUM turned such backgrounds into clearly coloured bars. An
-// all-dark cover keeps the full lift, or the visualizer would barely show.
-const ARTWORK_DARK_MINIMUM = 30
-// A colour this strong in one channel counts as bright even below ARTWORK_MINIMUM luminance:
-// luminance rates a vivid red such as #B65354 at only 104.
-const ARTWORK_BRIGHT_CHANNEL = 128
+// The one visibility floor for album-art colours on the near-black background: Rec. 709 luminance
+// for greys, strongest channel for tinted colours. Darker colours are lifted just to it, never
+// further, and everything brighter keeps the cover's own brightness. Lifting dark covers to a
+// fixed 112 turned barely visible tints into clearly coloured bars.
+const ARTWORK_MINIMUM = 30
 export const ALBUM_ART_FALLBACK = ['#9CA3AF', '#D1D5DB']
 
 export interface Rgb {
@@ -179,32 +173,26 @@ function artworkBrightness({ r, g, b }: Rgb): number {
   return r*0.2126+g*0.7152+b*0.0722
 }
 
-/**
- * Keep dark cover tones visible without replacing them with pale grey or new hues.
- * `keepDark`: the cover has a colour bright enough on its own, so near-black tones stay dark.
- */
-function visibleArtworkColor(hex: string, keepDark: boolean): string {
+/** Keep dark cover tones just visible without replacing them with pale grey or new hues. */
+function visibleArtworkColor(hex: string): string {
   const rgb=hexToRgb(hex)
   const brightness=artworkBrightness(rgb)
-  const minimum=ARTWORK_MINIMUM
-  const neutralMinimum=ARTWORK_NEUTRAL_MINIMUM
-  if (brightness >= minimum) return hex
+  if (brightness >= ARTWORK_MINIMUM) return hex
   if (isNeutralColor(rgb)) {
-    const lift=Math.max(0,neutralMinimum-brightness)
+    const lift=Math.max(0,ARTWORK_MINIMUM-brightness)
     return rgbToHex({r:rgb.r+lift,g:rgb.g+lift,b:rgb.b+lift})
   }
   // Luminance is relatively insensitive to blue. Raising every hue to the same
   // luminance made navy much brighter than red/green. Bound the strongest channel
   // instead, preserving already visible colours and dark chromatic shadows.
   const strongest=Math.max(rgb.r,rgb.g,rgb.b)
-  const target=keepDark ? ARTWORK_DARK_MINIMUM : minimum
-  const scale=Math.max(1,target/strongest)
+  const scale=Math.max(1,ARTWORK_MINIMUM/strongest)
   // Fade in ratio-preserving amplification only as the source leaves the black
   // floor. Tiny absolute differences must not become vivid through a large gain.
   const confidence=Math.max(0,Math.min(1,(strongest-4)/24))
   const chromaWeight=confidence*confidence*(3-2*confidence)
-  // Next to a bright colour the grey fallback must not outshine the dark floor either.
-  const lift=keepDark ? Math.max(0,target-strongest) : Math.max(0,neutralMinimum-brightness)
+  // The grey fallback must not outshine the floor either.
+  const lift=Math.max(0,ARTWORK_MINIMUM-strongest)
   return rgbToHex(mixRgb(
     {r:rgb.r+lift,g:rgb.g+lift,b:rgb.b+lift},
     {r:rgb.r*scale,g:rgb.g*scale,b:rgb.b*scale},chromaWeight))
@@ -212,11 +200,7 @@ function visibleArtworkColor(hex: string, keepDark: boolean): string {
 
 function buildTheme(colors: ColorSettings, stopsHex: ArtworkPalette, applyCoverage = true): ResolvedTheme {
   // Lift only the source anchors; keep the same direct RGB interpolation afterwards.
-  const keepDark = stopsHex.some(hex => {
-    const rgb = hexToRgb(hex)
-    return artworkBrightness(rgb) >= ARTWORK_MINIMUM || Math.max(rgb.r, rgb.g, rgb.b) >= ARTWORK_BRIGHT_CHANNEL
-  })
-  const visibleStops = colors.mode === 'albumArt' ? stopsHex.map(hex => visibleArtworkColor(hex, keepDark)) : stopsHex
+  const visibleStops = colors.mode === 'albumArt' ? stopsHex.map(visibleArtworkColor) : stopsHex
   const gradientStops = artworkGradientStops(visibleStops, colors.mode === 'albumArt' && applyCoverage, stopsHex.weights)
   const lutRgb: Rgb[] = new Array(LUT_SIZE)
   const lutHex: string[] = new Array(LUT_SIZE)
@@ -233,7 +217,7 @@ function buildTheme(colors: ColorSettings, stopsHex: ArtworkPalette, applyCovera
     // Keep their local peak response subtle, fading to the normal highlight for
     // brighter neutrals. Coloured bar highlights keep their existing response.
     const brightness=c.r*0.2126+c.g*0.7152+c.b*0.0722
-    const amount=Math.max(0,Math.min(1,(brightness-(ARTWORK_NEUTRAL_MINIMUM-8))/40))
+    const amount=Math.max(0,Math.min(1,(brightness-(ARTWORK_MINIMUM-8))/40))
     sheenLut[i]=colors.mode==='albumArt' && isNeutralColor(c) ? amount*amount*(3-2*amount) : 1
     const strength=0.35*sheenLut[i]
     brightLut[i] = rgbToHex({ r: c.r + (255 - c.r) * strength, g: c.g + (255 - c.g) * strength, b: c.b + (255 - c.b) * strength })
