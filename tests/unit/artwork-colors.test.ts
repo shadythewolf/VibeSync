@@ -87,8 +87,22 @@ describe('album artwork colour extraction', () => {
     expect(teal.length).toBeGreaterThan(300)
     expect(red.length).toBeGreaterThan(300)
     // Lifting the black background to the full minimum made it a mid teal (#0B7069).
-    expect(teal.every(c=>Math.max(c.r,c.g,c.b)>=56 && Math.max(c.r,c.g,c.b)<=72)).toBe(true)
+    expect(teal.every(c=>Math.max(c.r,c.g,c.b)>=28 && Math.max(c.r,c.g,c.b)<=34)).toBe(true)
     expect(hexToRgb(theme.colorAt(0)).r).toBeGreaterThanOrEqual(230)
+  })
+  it('keeps near-black cloud tints of the supplied Fragments cover dark next to its mid red', () => {
+    // Palette measured from the cover: the red is vivid but under the luminance minimum.
+    const palette=['#B65354','#3C383A','#1D2A29','#2F3941']
+    Object.defineProperty(palette,'weights',{value:[0.56,0.41,0.016,0.014]})
+    const theme=resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'albumArt'},palette)
+    const samples=Array.from({length:1000},(_,i)=>hexToRgb(theme.colorAt(i/999)))
+    // The full lift made the teal brighter than the red, so it filled the centre (#327975).
+    const red=luminance('#B65354')*255
+    expect(samples.filter(c=>c.g>c.r).every(c=>c.r*0.2126+c.g*0.7152+c.b*0.0722<red)).toBe(true)
+    expect(hexToRgb(theme.colorAt(0)).r).toBeGreaterThanOrEqual(170)
+    // Tints above the visibility floor keep their own brightness: #1D2A29 peaks at 42, not 121.
+    expect(samples.filter(c=>c.g>c.r*1.3 && c.g>=c.b).every(c=>Math.max(c.r,c.g,c.b)<=42)).toBe(true)
+    expect(samples.some(c=>c.g>c.r*1.3 && c.g>=c.b)).toBe(true)
   })
   it.each([[1,1,2],[2,1,1],[1,2,1],[0,0,1],[0,2,1],[3,2,1]])('does not amplify near-black channel noise into a saturated colour: %j', (r,g,b) => {
     const palette=extractPaletteFromPixels(pixels([[r,g,b]]))
@@ -97,7 +111,7 @@ describe('album artwork colour extraction', () => {
     for(const level of [0,1]) {
       const c=hexToRgb(theme.barColor(1,3,level))
       expect(Math.max(c.r,c.g,c.b)-Math.min(c.r,c.g,c.b)).toBeLessThanOrEqual(2)
-      expect(Math.min(c.r,c.g,c.b)).toBeGreaterThanOrEqual(36)
+      expect(Math.min(c.r,c.g,c.b)).toBeGreaterThanOrEqual(28)
     }
   })
   it('keeps near-black neutral coverage alongside a small coloured accent',()=>{
@@ -212,7 +226,7 @@ describe('album artwork colour extraction', () => {
     const theme=resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'albumArt'},palette)
     const samples=Array.from({length:1000},(_,i)=>hexToRgb(theme.colorAt(i/999)))
     expect(samples.filter(c=>isNeutralColor(c) && Math.max(c.r,c.g,c.b)<80).length).toBeGreaterThan(750)
-    expect(samples.every(c=>Math.max(c.r,c.g,c.b)>=36)).toBe(true)
+    expect(samples.every(c=>Math.max(c.r,c.g,c.b)>=28)).toBe(true)
     expect(samples.filter(c=>c.r>c.g*1.4 && c.g>c.b).length).toBeGreaterThan(70)
   })
   it('does not replace a black majority with the brightest neutral detail', () => {
@@ -223,16 +237,16 @@ describe('album artwork colour extraction', () => {
     expect(hexToRgb(palette[neutral]).r).toBeLessThan(20)
     const theme=resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'albumArt'},palette)
     const c=hexToRgb(theme.colorAt(0.6))
-    expect(c.r).toBe(38)
-    expect(c.g).toBe(38)
-    expect(c.b).toBe(38)
+    expect(c.r).toBe(30)
+    expect(c.g).toBe(30)
+    expect(c.b).toBe(30)
   })
   it('keeps dark monochrome area weighted and visible', () => {
     const palette=extractPaletteFromPixels(new Uint8ClampedArray([...pixels([[0,0,0]],95),...pixels([[255,255,255]],5)]))
     const theme=resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'albumArt'},palette)
-    expect(theme.colorAt(0.5)).toBe('#262626')
+    expect(theme.colorAt(0.5)).toBe('#1E1E1E')
     expect(theme.colorAt(0)).toBe('#FFFFFF')
-    expect(theme.colorAt(1)).toBe('#262626')
+    expect(theme.colorAt(1)).toBe('#1E1E1E')
   })
   it('raises dark blue visibility without changing its channel ratios or custom colours', () => {
     const album=resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'albumArt'},['#041020'])

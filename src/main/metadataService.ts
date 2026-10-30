@@ -112,6 +112,7 @@ export class MetadataService {
   private nativeTrack: TrackInfo = UNKNOWN_TRACK
   private listeners = new Set<(track: TrackInfo) => void>()
   private bridgeTrack: TrackInfo | null = null
+  private coverFallback: { bridge: TrackInfo; artworkUrl: string; track: TrackInfo } | null = null
   private readonly urls = new Map<string, string>()
   private readonly diskLookups = new Map<string, Promise<string | null>>()
   private readonly requested = new Set<string>()
@@ -149,7 +150,21 @@ export class MetadataService {
   }
 
   private publishPreferredTrack(): void {
-    this.publishTrack(this.bridgeTrack ?? this.nativeTrack)
+    const bridge = this.bridgeTrack
+    const native = this.nativeTrack
+    // The bridge downloads its own copy of the cover. Until it arrives, or when the download
+    // fails, show the media session's cover of the same song instead of none.
+    if (bridge && !bridge.artworkUrl && native.available && native.artworkUrl &&
+      bridge.title.trim().toLowerCase() === native.title.trim().toLowerCase()) {
+      if (this.coverFallback?.bridge !== bridge || this.coverFallback.artworkUrl !== native.artworkUrl) {
+        this.coverFallback = { bridge, artworkUrl: native.artworkUrl,
+          track: { ...bridge, artworkUrl: native.artworkUrl, artworkKey: native.artworkKey } }
+      }
+      this.publishTrack(this.coverFallback.track)
+      return
+    }
+    this.coverFallback = null
+    this.publishTrack(bridge ?? native)
   }
 
   /** Delete every cached artwork file and forget the in-memory URLs. */

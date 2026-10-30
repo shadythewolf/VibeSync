@@ -98,9 +98,15 @@ export async function initializeApp(): Promise<void> {
   }
 
   // Track metadata
-  api.track.onChange((t) => useTrackStore.getState()._setTrack(t))
+  // A change that arrives while the initial request is pending is newer than its reply.
+  let trackChanged = false
+  api.track.onChange((t) => {
+    trackChanged = true
+    useTrackStore.getState()._setTrack(t)
+  })
   try {
-    useTrackStore.getState()._setTrack(await api.track.get())
+    const track = await api.track.get()
+    if (!trackChanged) useTrackStore.getState()._setTrack(track)
   } catch {
     /* metadata is optional */
   }

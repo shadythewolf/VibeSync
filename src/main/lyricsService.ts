@@ -201,8 +201,9 @@ export class LyricsService {
           this.bridgeQueue = { ...this.bridgeQueue, nextTrack: { ...this.bridgeQueue.nextTrack, artworkUrl: data } }
           this.publishQueue()
         }
-      } catch {
-        this.artworkRetryAt.set(url, Date.now() + 30000)
+      } catch (err) {
+        if (!this.artworkRetryAt.has(url)) log('warn', 'Spotify cover download failed; retrying every 5 s', err)
+        this.artworkRetryAt.set(url, Date.now() + 5000)
         while (this.artworkRetryAt.size > 20) this.artworkRetryAt.delete(this.artworkRetryAt.keys().next().value!)
       } finally { clearTimeout(timeout) }
     })()

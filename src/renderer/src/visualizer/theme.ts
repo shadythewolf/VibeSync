@@ -20,14 +20,15 @@ const ALBUM_ART_TRANSITION_MS = 900
 const ALBUM_ART_TRANSITION_STEPS = 18
 // Brightness floors (Rec. 709 luminance, 0..255) for album-art colours on the near-black background.
 const ARTWORK_MINIMUM = 112
-const ARTWORK_NEUTRAL_MINIMUM = 38
-// Strongest-channel target for near-black tinted colours (a black background with a slight teal
-// or navy cast) when the cover also has a bright colour: visible, but still dark. Lifting them to
-// ARTWORK_MINIMUM turned such backgrounds into clearly coloured bars. An all-dark cover keeps the
-// full lift, or the visualizer would barely show. The full lift applies from ARTWORK_DARK_TO up.
-const ARTWORK_DARK_MINIMUM = 64
-const ARTWORK_DARK_FROM = 32
-const ARTWORK_DARK_TO = 72
+const ARTWORK_NEUTRAL_MINIMUM = 30
+// Strongest-channel floor for dark tinted colours (a black background with a slight teal or navy
+// cast) when the cover also has a bright colour: lifted just enough to be visible, never further.
+// Lifting them towards ARTWORK_MINIMUM turned such backgrounds into clearly coloured bars. An
+// all-dark cover keeps the full lift, or the visualizer would barely show.
+const ARTWORK_DARK_MINIMUM = 30
+// A colour this strong in one channel counts as bright even below ARTWORK_MINIMUM luminance:
+// luminance rates a vivid red such as #B65354 at only 104.
+const ARTWORK_BRIGHT_CHANNEL = 128
 export const ALBUM_ART_FALLBACK = ['#9CA3AF', '#D1D5DB']
 
 export interface Rgb {
@@ -196,14 +197,14 @@ function visibleArtworkColor(hex: string, keepDark: boolean): string {
   // luminance made navy much brighter than red/green. Bound the strongest channel
   // instead, preserving already visible colours and dark chromatic shadows.
   const strongest=Math.max(rgb.r,rgb.g,rgb.b)
-  const depth=keepDark ? Math.max(0,Math.min(1,(strongest-ARTWORK_DARK_FROM)/(ARTWORK_DARK_TO-ARTWORK_DARK_FROM))) : 1
-  const target=ARTWORK_DARK_MINIMUM+(minimum-ARTWORK_DARK_MINIMUM)*depth*depth*(3-2*depth)
+  const target=keepDark ? ARTWORK_DARK_MINIMUM : minimum
   const scale=Math.max(1,target/strongest)
   // Fade in ratio-preserving amplification only as the source leaves the black
   // floor. Tiny absolute differences must not become vivid through a large gain.
   const confidence=Math.max(0,Math.min(1,(strongest-4)/24))
   const chromaWeight=confidence*confidence*(3-2*confidence)
-  const lift=Math.max(0,neutralMinimum-brightness)
+  // Next to a bright colour the grey fallback must not outshine the dark floor either.
+  const lift=keepDark ? Math.max(0,target-strongest) : Math.max(0,neutralMinimum-brightness)
   return rgbToHex(mixRgb(
     {r:rgb.r+lift,g:rgb.g+lift,b:rgb.b+lift},
     {r:rgb.r*scale,g:rgb.g*scale,b:rgb.b*scale},chromaWeight))
@@ -211,7 +212,10 @@ function visibleArtworkColor(hex: string, keepDark: boolean): string {
 
 function buildTheme(colors: ColorSettings, stopsHex: ArtworkPalette, applyCoverage = true): ResolvedTheme {
   // Lift only the source anchors; keep the same direct RGB interpolation afterwards.
-  const keepDark = stopsHex.some(hex => artworkBrightness(hexToRgb(hex)) >= ARTWORK_MINIMUM)
+  const keepDark = stopsHex.some(hex => {
+    const rgb = hexToRgb(hex)
+    return artworkBrightness(rgb) >= ARTWORK_MINIMUM || Math.max(rgb.r, rgb.g, rgb.b) >= ARTWORK_BRIGHT_CHANNEL
+  })
   const visibleStops = colors.mode === 'albumArt' ? stopsHex.map(hex => visibleArtworkColor(hex, keepDark)) : stopsHex
   const gradientStops = artworkGradientStops(visibleStops, colors.mode === 'albumArt' && applyCoverage, stopsHex.weights)
   const lutRgb: Rgb[] = new Array(LUT_SIZE)

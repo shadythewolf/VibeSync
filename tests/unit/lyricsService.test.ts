@@ -197,6 +197,32 @@ describe('bridge playback authority', () => {
     expect(f.metadata.getTrack().artworkUrl).toBe('data:image/png;base64,AQID')
     f.service.stop()
   })
+  it('shows the media session cover of the same song while the bridge download fails, then retries', async () => {
+    const fetcher = vi.fn().mockRejectedValueOnce(Error('offline'))
+      .mockResolvedValue({ok:true,headers:{get:()=> 'image/png'},arrayBuffer:async()=>new Uint8Array([1,2,3]).buffer})
+    vi.stubGlobal('fetch',fetcher)
+    mocks.settings.lyrics.enabled = false
+    const f = fixture()
+    f.metadata.setBridgeTrack(null)
+    const native = {...UNKNOWN_TRACK,available:true,title:'Bridge song',artist:'First',artworkKey:'abcd1234',artworkUrl:'data:image/png;base64,bmF0aXZl'}
+    ;(f.metadata as any).setNativeTrack(native)
+    const artworkUrl = 'https://i.scdn.co/image/test'
+    f.receive(playbackPacket('b'.repeat(22),{artworkUrl}))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(f.metadata.getTrack()).toMatchObject({trackId:'spotify:'+'b'.repeat(22),artworkUrl:native.artworkUrl,artworkKey:'abcd1234'})
+    // Another song in the media session must not lend its cover.
+    ;(f.metadata as any).setNativeTrack({...native,title:'Other song'})
+    expect(f.metadata.getTrack().artworkUrl).toBeNull()
+    ;(f.metadata as any).setNativeTrack(native)
+    f.receive(playbackPacket('b'.repeat(22),{artworkUrl}))
+    expect(fetcher).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(5000)
+    f.receive(playbackPacket('b'.repeat(22),{artworkUrl}))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(fetcher).toHaveBeenCalledTimes(2)
+    expect(f.metadata.getTrack()).toMatchObject({artworkUrl:'data:image/png;base64,AQID',artworkKey:'bridge:'+artworkUrl})
+    f.service.stop()
+  })
   it('does not apply late artwork to another song or after disconnect', async () => {
     let finish: (v: unknown) => void = () => {}
     vi.stubGlobal('fetch',vi.fn(() => new Promise(resolve => { finish = resolve })))
