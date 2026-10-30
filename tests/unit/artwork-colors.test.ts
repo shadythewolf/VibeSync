@@ -68,14 +68,15 @@ describe('album artwork colour extraction', () => {
     expect(turquoise).toBeGreaterThan(share * 0.4)
     expect(turquoise).toBeLessThan(share * 1.5)
   })
-  it('keeps the supplied Salt and Silence cover dark blue without pale grey bands', () => {
+  it('keeps the supplied Salt and Silence cover its own dark blue without pale grey bands', () => {
     const data=Uint8ClampedArray.from(saltHistogram.flatMap(([r,g,b,a,count])=>Array.from({length:count},()=>[r,g,b,a]).flat()))
     const palette=extractPaletteFromPixels(data)
     expect(palette.every(hex=>!isNeutralColor(hexToRgb(hex)))).toBe(true)
     const theme=resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'albumArt'},palette)
     const samples=Array.from({length:1000},(_,i)=>hexToRgb(theme.colorAt(i/999)))
     expect(samples.every(c=>c.b>c.r*1.5 && c.b>c.g*1.5)).toBe(true)
-    expect(samples.every(c=>c.b>=105 && c.b<=120)).toBe(true)
+    // A dark cover keeps its own brightness; it used to be lifted to a fixed 112.
+    expect(samples.every(c=>c.b>=30 && c.b<=50)).toBe(true)
   })
   it('keeps the near-black teal of the supplied Break The Walls cover dark next to its bright red', () => {
     const data=Uint8ClampedArray.from(breakTheWallsHistogram.flatMap(([r,g,b,a,count])=>Array.from({length:count},()=>[r,g,b,a]).flat()))
@@ -248,12 +249,15 @@ describe('album artwork colour extraction', () => {
     expect(theme.colorAt(0)).toBe('#FFFFFF')
     expect(theme.colorAt(1)).toBe('#1E1E1E')
   })
-  it('raises dark blue visibility without changing its channel ratios or custom colours', () => {
-    const album=resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'albumArt'},['#041020'])
+  it('lifts dark blue only to the floor without changing its channel ratios or custom colours', () => {
+    expect(resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'albumArt'},['#041020']).colorAt(0)).toBe('#041020')
+    const album=resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'albumArt'},['#070E1C'])
     const c=hexToRgb(album.colorAt(0))
-    expect(c.b/c.g).toBeCloseTo(2,1)
-    expect(c.g/c.r).toBeCloseTo(4,0)
-    expect(c.b).toBe(112)
+    expect(c.b).toBe(30)
+    expect(c.b/c.g).toBeCloseTo(2,0)
+    // The near-black dark gold and blue-grey of Break The Silence stay as dark as the cover.
+    const silence=resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'albumArt'},['#272217','#151618','#0F1315'])
+    for(let i=0;i<=100;i++)expect(Math.max(...Object.values(hexToRgb(silence.colorAt(i/100))))).toBeLessThanOrEqual(39)
     const custom=resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'custom',primary:'#041020',secondary:'#041020'})
     expect(custom.colorAt(0)).toBe('#041020')
   })
