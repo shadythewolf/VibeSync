@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { extractPaletteFromPixels } from '../../src/renderer/src/visualizer/artworkColors'
 import coverHistogram from '../fixtures/alan-wake-cover-histogram.json'
 import saltHistogram from '../fixtures/salt-and-silence-cover-histogram.json'
+import breakTheWallsHistogram from '../fixtures/break-the-walls-cover-histogram.json'
 import nibiruHistogram from '../fixtures/nibiru-cover-histogram.json'
 import rushHistogram from '../fixtures/rush-over-me-cover-histogram.json'
 import neutralizedHistogram from '../fixtures/neutralized-cover-histogram.json'
@@ -75,6 +76,19 @@ describe('album artwork colour extraction', () => {
     const samples=Array.from({length:1000},(_,i)=>hexToRgb(theme.colorAt(i/999)))
     expect(samples.every(c=>c.b>c.r*1.5 && c.b>c.g*1.5)).toBe(true)
     expect(samples.every(c=>c.b>=105 && c.b<=120)).toBe(true)
+  })
+  it('keeps the near-black teal of the supplied Break The Walls cover dark next to its bright red', () => {
+    const data=Uint8ClampedArray.from(breakTheWallsHistogram.flatMap(([r,g,b,a,count])=>Array.from({length:count},()=>[r,g,b,a]).flat()))
+    const palette=extractPaletteFromPixels(data)
+    const theme=resolveThemeImmediate({...DEFAULT_SETTINGS.colors,mode:'albumArt'},palette)
+    const samples=Array.from({length:1000},(_,i)=>hexToRgb(theme.colorAt(i/999)))
+    const teal=samples.filter(c=>c.g>c.r*2 && c.b>c.r*2)
+    const red=samples.filter(c=>c.r>c.g*2 && c.r>c.b*2)
+    expect(teal.length).toBeGreaterThan(300)
+    expect(red.length).toBeGreaterThan(300)
+    // Lifting the black background to the full minimum made it a mid teal (#0B7069).
+    expect(teal.every(c=>Math.max(c.r,c.g,c.b)>=56 && Math.max(c.r,c.g,c.b)<=72)).toBe(true)
+    expect(hexToRgb(theme.colorAt(0)).r).toBeGreaterThanOrEqual(230)
   })
   it.each([[1,1,2],[2,1,1],[1,2,1],[0,0,1],[0,2,1],[3,2,1]])('does not amplify near-black channel noise into a saturated colour: %j', (r,g,b) => {
     const palette=extractPaletteFromPixels(pixels([[r,g,b]]))
