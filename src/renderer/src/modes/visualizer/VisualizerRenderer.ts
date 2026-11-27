@@ -36,6 +36,12 @@ const BAR_AREA = 0.7
 const PARTICLE_CAPACITY = 240
 /** Longest dt (s) we integrate; anything longer is a hitch/resume and is clamped. */
 const MAX_DT = 0.1
+/**
+ * CSS px between waveform points. Stroking one point per sample (under 1 px apart on a
+ * wide window) made a dense zig-zag that cost the GPU most of its frame budget at
+ * 3440x1440; ~6 px keeps the shape and a locked frame rate.
+ */
+const WAVE_POINT_SPACING = 6
 
 interface Layout {
   /** y of the bar baseline (CSS px). */
@@ -498,8 +504,8 @@ export class VisualizerRenderer implements ModeRenderer {
     const yMid = h * 0.5
     const amp = h * 0.1 * this.idleFade * (0.75 + 0.25 * this.bass)
     const span = mirror ? w * 0.5 : w
-    // Roughly one sample per 1.5 px; stride through frame.waveform at small widths.
-    const stride = Math.max(1, Math.floor(len / Math.max(64, span / 1.5)))
+    // One point every WAVE_POINT_SPACING px; stride through frame.waveform.
+    const stride = Math.max(1, Math.round(len / Math.max(64, span / WAVE_POINT_SPACING)))
     const step = span / (len - 1)
     const cx = w * 0.5
 
@@ -523,12 +529,10 @@ export class VisualizerRenderer implements ModeRenderer {
     b.lineJoin = 'round'
     b.lineCap = 'round'
     b.strokeStyle = this.waveGradient as CanvasGradient
-    // Wide faint halo first, then the crisp core; the bloom pass adds the rest.
-    b.globalAlpha = 0.22 * this.idleFade
-    b.lineWidth = 6
-    b.stroke()
+    // A single crisp core; the bloom pass adds the halo. A second wide translucent stroke
+    // doubled the raster cost for little visible difference.
     b.globalAlpha = 0.9 * this.idleFade
-    b.lineWidth = 1.75
+    b.lineWidth = 2
     b.stroke()
     b.globalAlpha = 1
   }
